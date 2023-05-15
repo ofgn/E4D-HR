@@ -225,7 +225,7 @@ contains
    
     !!send assignments
     call MPI_BCAST(tne, 1, MPI_INTEGER , 0, E4D_COMM, ierr )
-    call MPI_BCAST(e_pos,4*tne ,MPI_REAL , 0, E4D_COMM, ierr )
+    call MPI_BCAST(e_pos,4*tne ,MPI_DOUBLE , 0, E4D_COMM, ierr )
     call MPI_BCAST(jind,2*(n_rank-1),MPI_INTEGER , 0, E4D_COMM, ierr )
     call MPI_BCAST(eind,2*(n_rank-1),MPI_INTEGER , 0, E4D_COMM, ierr )
    
@@ -273,7 +273,7 @@ contains
 
     !send everything to slave
     call MPI_BCAST(nnodes, 1, MPI_INTEGER , 0, E4D_COMM, ierr )
-    call MPI_BCAST(nodes, nnodes*3, MPI_REAL , 0, E4D_COMM, ierr )
+    call MPI_BCAST(nodes, nnodes*3, MPI_DOUBLE , 0, E4D_COMM, ierr )
     call MPI_BCAST(nbounds, nnodes, MPI_INTEGER , 0, E4D_COMM, ierr )
     call MPI_BCAST(nelem, 1, MPI_INTEGER, 0,E4D_COMM,ierr)
     call MPI_BCAST(elements, nelem*4,MPI_INTEGER,0,E4D_COMM,ierr)
@@ -317,7 +317,7 @@ contains
     ntot=0
     lrep=ts
     do i=1,tne
-       call MPI_RECV(pck,2,MPI_REAL,MPI_ANY_SOURCE,1,E4D_COMM,status,ierr)
+       call MPI_RECV(pck,2,MPI_DOUBLE,MPI_ANY_SOURCE,1,E4D_COMM,status,ierr)
    
        rtm=pck(1)
        itm=int(pck(2))
@@ -377,7 +377,7 @@ contains
        call cpu_time(ts)
   
        do i=1,tne
-          call MPI_RECV(pck,2,MPI_REAL,MPI_ANY_SOURCE,1,E4D_COMM,status,ierr)
+          call MPI_RECV(pck,2,MPI_DOUBLE,MPI_ANY_SOURCE,1,E4D_COMM,status,ierr)
           
           rtm=pck(1)
           itm=int(pck(2))
@@ -455,7 +455,7 @@ contains
     smax=0
     smin=0
     do i=1,n_rank-1
-       call MPI_RECV(run_times(i),1,MPI_REAL,i,0,E4D_COMM,status,ierr)
+       call MPI_RECV(run_times(i),1,MPI_DOUBLE,i,0,E4D_COMM,status,ierr)
        if(run_times(i)>rt_max) then
           rt_max = run_times(i)
           smax=i
@@ -485,7 +485,7 @@ contains
     sabmax=0
     sabmin=0
     do i=1,n_rank-1
-       call MPI_RECV(run_times(i),1,MPI_REAL,i,0,E4D_COMM,status,ierr)
+       call MPI_RECV(run_times(i),1,MPI_DOUBLE,i,0,E4D_COMM,status,ierr)
        if(run_times(i)>abmax) then
           abmax = run_times(i)
           sabmax=i
@@ -514,7 +514,7 @@ contains
     skmax=0
     skmin=0
     do i=1,n_rank-1
-       call MPI_RECV(run_times(i),1,MPI_REAL,i,0,E4D_COMM,status,ierr)
+       call MPI_RECV(run_times(i),1,MPI_DOUBLE,i,0,E4D_COMM,status,ierr)
        if(run_times(i)>kspmax) then
           kspmax = run_times(i)
           skmax=i
@@ -542,7 +542,7 @@ contains
     sjmax=0
     sjmin=0
     do i=1,n_rank-1
-       call MPI_RECV(run_times(i),1,MPI_REAL,i,0,E4D_COMM,status,ierr)
+       call MPI_RECV(run_times(i),1,MPI_DOUBLE,i,0,E4D_COMM,status,ierr)
        if(run_times(i)>jmax) then
           jmax = run_times(i)
           sjmax=i
@@ -685,7 +685,7 @@ contains
  
     call send_command(4)
     call MPI_BCAST(nsig, 1, MPI_INTEGER, 0,E4D_COMM,ierr)
-    call MPI_BCAST(sigma, nsig,MPI_REAL,0,E4D_COMM,ierr)
+    call MPI_BCAST(sigma, nsig,MPI_DOUBLE,0,E4D_COMM,ierr)
  
   end subroutine send_sigma
   !____________________________________________________________________
@@ -695,7 +695,7 @@ contains
     implicit none
  
     call send_command(104)
-    call MPI_BCAST(sigmai, nsig,MPI_REAL,0,E4D_COMM,ierr)
+    call MPI_BCAST(sigmai, nsig,MPI_DOUBLE,0,E4D_COMM,ierr)
  
   end subroutine send_sigmai
   !____________________________________________________________________
@@ -747,7 +747,7 @@ contains
     do i=1,n_rank-1
        call MPI_RECV(nbuff,1,MPI_INTEGER,i,0,E4D_COMM,status,ierr)
        call MPI_RECV(ibuff(1:nbuff),nbuff,MPI_INTEGER,i,0,E4D_COMM,status,ierr)
-       call MPI_RECV(rbuff(1:nbuff),nbuff,MPI_REAL,i,0,E4D_COMM,status,ierr)
+       call MPI_RECV(rbuff(1:nbuff),nbuff,MPI_DOUBLE,i,0,E4D_COMM,status,ierr)
        
        do j=1,nbuff
           dpred(ibuff(j))=dpred(ibuff(j))+rbuff(j)
@@ -772,7 +772,7 @@ contains
        do i=1,n_rank-1 
           call MPI_RECV(nbuff,1,MPI_INTEGER,i,0,E4D_COMM,status,ierr)
           call MPI_RECV(ibuff(1:nbuff),nbuff,MPI_INTEGER,i,0,E4D_COMM,status,ierr)
-          call MPI_RECV(rbuff(1:nbuff),nbuff,MPI_REAL,i,0,E4D_COMM,status,ierr)
+          call MPI_RECV(rbuff(1:nbuff),nbuff,MPI_DOUBLE,i,0,E4D_COMM,status,ierr)
           
           do j=1,nbuff
              dpredi(ibuff(j))=dpredi(ibuff(j))+rbuff(j)
@@ -807,10 +807,10 @@ contains
     end if
     call  send_command(12)
     if(invi) then
-       !call MPI_BCAST(Wdi*Wd_cull,nm,MPI_REAL,0,E4D_COMM,ierr)
-       call MPI_BCAST(Wdi*Wd_cull/dpred,nm,MPI_REAL,0,COMM,ierr)
+       !call MPI_BCAST(Wdi*Wd_cull,nm,MPI_DOUBLE,0,E4D_COMM,ierr)
+       call MPI_BCAST(Wdi*Wd_cull/dpred,nm,MPI_DOUBLE,0,COMM,ierr)
     else
-       call MPI_BCAST(Wd*Wd_cull,nm,MPI_REAL,0,COMM,ierr)
+       call MPI_BCAST(Wd*Wd_cull,nm,MPI_DOUBLE,0,COMM,ierr)
     end if
   
     return
@@ -825,7 +825,7 @@ contains
     integer :: ierr,iopt
     
     call  send_command(112)  
-    call MPI_BCAST(Wdi*Wd_cull,nm,MPI_REAL,0,E4D_COMM,ierr)
+    call MPI_BCAST(Wdi*Wd_cull,nm,MPI_DOUBLE,0,E4D_COMM,ierr)
     
     return
   end subroutine send_data_noisei
@@ -851,9 +851,9 @@ contains
     end if
     call send_command(13)
     !!send command 8 to slaves and then broadcast x
-    call MPI_BCAST(x(1:m),m,MPI_REAL,0,COMM,ierr1)
+    call MPI_BCAST(x(1:m),m,MPI_DOUBLE,0,COMM,ierr1)
    
-    call MPI_REDUCE(MPI_IN_PLACE,mv2,n,MPI_REAL,MPI_SUM,0,COMM,ierr2)
+    call MPI_REDUCE(MPI_IN_PLACE,mv2,n,MPI_DOUBLE,MPI_SUM,0,COMM,ierr2)
  
     return
 
@@ -865,7 +865,7 @@ contains
     end if
 
     do i=1,iend
-       call MPI_RECV(tsol, n, MPI_REAL,i, tag, COMM, status, ierr2)      
+       call MPI_RECV(tsol, n, MPI_DOUBLE,i, tag, COMM, status, ierr2)      
        mv2=mv2+tsol
        tsol = 0
     end do
@@ -901,7 +901,7 @@ contains
    
     mv2 = 0
     tsol = 0
-    !call MPI_REDUCE(MPI_IN_PLACE,mv2,n,MPI_REAL,MPI_SUM,0,E4D_COMM,ierr2)
+    !call MPI_REDUCE(MPI_IN_PLACE,mv2,n,MPI_DOUBLE,MPI_SUM,0,E4D_COMM,ierr2)
 
     call MPI_REDUCE(MPI_IN_PLACE,mv2,n,MPI_DOUBLE_PRECISION,MPI_SUM,0,COMM,ierr2)
     return
@@ -939,7 +939,7 @@ contains
     end if
     call send_command(14)
  
-    call MPI_BCAST(x,n,MPI_REAL,0,COMM,ierr1)
+    call MPI_BCAST(x,n,MPI_DOUBLE,0,COMM,ierr1)
    
     recvcounts=0
     displs=0
@@ -960,7 +960,7 @@ contains
     
     !!Recieve the results from the slaves
     mv1 = 0 
-    call MPI_GATHERV(dummy,0,MPI_REAL,mv1,recvcounts,displs,MPI_REAL,0,COMM,ierr2)
+    call MPI_GATHERV(dummy,0,MPI_DOUBLE,mv1,recvcounts,displs,MPI_DOUBLE,0,COMM,ierr2)
   
     return
     
@@ -969,7 +969,7 @@ contains
        ind1=jind(i,1)
        ind2=jind(i,2)
        nrow = ind2-ind1+1
-       call MPI_RECV(mv1(ind1:ind2),nrow, MPI_REAL,i, tag, COMM, status, ierr2)
+       call MPI_RECV(mv1(ind1:ind2),nrow, MPI_DOUBLE,i, tag, COMM, status, ierr2)
     end do
   
   end subroutine do_pmatvec1
@@ -1011,7 +1011,7 @@ contains
     
     !!Recieve the results from the slaves
     mv1 = 0
-    call MPI_GATHERV(dummy,0,MPI_REAL,mv1,recvcounts,displs,MPI_REAL,0,COMM,ierr2)
+    call MPI_GATHERV(dummy,0,MPI_DOUBLE,mv1,recvcounts,displs,MPI_DOUBLE,0,COMM,ierr2)
     return
     
 
@@ -1019,7 +1019,7 @@ contains
        ind1=jind(i,1)
        ind2=jind(i,2)
        nrow = ind2-ind1+1
-       call MPI_RECV(mv1(ind1:ind2),nrow, MPI_REAL,i, tag, COMM, status, ierr2)
+       call MPI_RECV(mv1(ind1:ind2),nrow, MPI_DOUBLE,i, tag, COMM, status, ierr2)
     end do
   
   end subroutine do_pmatvec1_dbl
@@ -1050,7 +1050,7 @@ contains
     
     !!now receive each part of the solution from the nodes
     do i=1,n_rank-1
-       call MPI_RECV(tsol, n, MPI_REAL,i, tag, E4D_COMM, status, ierr2)      
+       call MPI_RECV(tsol, n, MPI_DOUBLE,i, tag, E4D_COMM, status, ierr2)      
        mv2=mv2+tsol
        tsol = 0
     end do
@@ -1096,7 +1096,7 @@ contains
        ind1=jind(i,1)
        ind2=jind(i,2)
        nrow = ind2-ind1+1
-       call MPI_RECV(mv1(ind1:ind2),nrow, MPI_REAL,i, tag, E4D_COMM, status, ierr2)
+       call MPI_RECV(mv1(ind1:ind2),nrow, MPI_DOUBLE,i, tag, E4D_COMM, status, ierr2)
     end do
   
   end subroutine do_pmatvec1i
@@ -1228,7 +1228,7 @@ contains
     integer ::  status(MPI_STATUS_SIZE)   
     
     call send_command(6)
-    !call MPI_RECV(etm2, 1, MPI_REAL,1, 0, E4D_COMM, status, ierr2)
+    !call MPI_RECV(etm2, 1, MPI_DOUBLE,1, 0, E4D_COMM, status, ierr2)
   
   end subroutine msolve_forward
   !__________________________________________________________________________
@@ -1265,7 +1265,7 @@ contains
     do i=1,n_rank-1
         nrows = jind(i,2)-jind(i,1)+1
         allocate(tjac(nrows,nelem))
-        call MPI_RECV(tjac,nrows*nelem,MPI_REAL,i,i,E4D_COMM,status,ierr)
+        call MPI_RECV(tjac,nrows*nelem,MPI_DOUBLE,i,i,E4D_COMM,status,ierr)
         if(jaco_ascii_opt) then
            do j=1,nrows
               write(13,*) tjac(j,:)
@@ -1449,14 +1449,14 @@ contains
        if(im_fmm) then
           do i=1,n_rank_fmm-1
              
-             call MPI_RECV(jtmp,nsig,MPI_REAL,i,0,FMM_COMM,status,ierr)
+             call MPI_RECV(jtmp,nsig,MPI_DOUBLE,i,0,FMM_COMM,status,ierr)
              sens=sens+jtmp
              
           end do
        else
           do i=1,n_rank-1
              
-             call MPI_RECV(jtmp,nsig,MPI_REAL,i,0,E4D_COMM,status,ierr)
+             call MPI_RECV(jtmp,nsig,MPI_DOUBLE,i,0,E4D_COMM,status,ierr)
              sens=sens+jtmp
              
           end do
@@ -1886,8 +1886,8 @@ contains
         if(.not. allocated(speed)) allocate(speed(nelem))
      end if
      if(cgmin_flag(2)) then
-        call MPI_BCAST(sigma,nelem,MPI_REAL,0,M_COMM,ierr)
-        call MPI_BCAST(speed,nelem,MPI_REAL,0,M_COMM,ierr)
+        call MPI_BCAST(sigma,nelem,MPI_DOUBLE,0,M_COMM,ierr)
+        call MPI_BCAST(speed,nelem,MPI_DOUBLE,0,M_COMM,ierr)
      end if
      return
      
@@ -1896,27 +1896,27 @@ contains
         if(cgmin_flag(1)) then
            if(allocated(sigma)) deallocate(sigma)
            allocate(sigma(nelem))
-           call MPI_RECV(sigma,nelem,MPI_REAL,0,tag,MPI_COMM_WORLD,status,ierr)
+           call MPI_RECV(sigma,nelem,MPI_DOUBLE,0,tag,MPI_COMM_WORLD,status,ierr)
            !write(*,*) "FMM got sigma",maxval(sigma),minval(sigma)
         end if
 
         if(cgmin_flag(2)) then
            !send speed to the E4D master
-           call MPI_SEND(speed,nelem,MPI_REAL,0,tag,MPI_COMM_WORLD,ierr)
+           call MPI_SEND(speed,nelem,MPI_DOUBLE,0,tag,MPI_COMM_WORLD,ierr)
         end if
 
      else
        
         if(cgmin_flag(2)) then
            !send sigma to the FMM master
-           call MPI_SEND(sigma,nelem,MPI_REAL,master_proc_fmm,tag,MPI_COMM_WORLD,ierr)
+           call MPI_SEND(sigma,nelem,MPI_DOUBLE,master_proc_fmm,tag,MPI_COMM_WORLD,ierr)
         end if
 
         if(cgmin_flag(1)) then
            !get speed from the FMM master
            if(allocated(speed)) deallocate(speed)
            allocate(speed(nelem))
-           call MPI_RECV(speed,nelem,MPI_REAL,master_proc_fmm,tag,MPI_COMM_WORLD,status,ierr)
+           call MPI_RECV(speed,nelem,MPI_DOUBLE,master_proc_fmm,tag,MPI_COMM_WORLD,status,ierr)
            !write(*,*) "E4D got speed",maxval(speed),minval(speed)
         end if
 
@@ -1930,7 +1930,7 @@ contains
      !send the slave the nodes and elements and instruct them to build and share
      !the inverse distance matrix and volume vectors
      call send_command(1009)
-     call MPI_BCAST(nodes, nnodes*3, MPI_REAL , 0, E4D_COMM, ierr )
+     call MPI_BCAST(nodes, nnodes*3, MPI_DOUBLE , 0, E4D_COMM, ierr )
      call MPI_BCAST(elements, nelem*4,MPI_INTEGER,0,E4D_COMM,ierr)
      
      

@@ -57,7 +57,7 @@ program main
 !!______________________________________________________________________________________________
 
 
-  
+   
   use vars                                
   use buildmesh
   use master
@@ -344,6 +344,12 @@ program main
 
   !the inverse iterations start here
    do while (.not. con_flag)
+     IF(iter+1.gt.max_iters_dc)  then 
+         write(*,*) "-------------------------------------"
+         write(*,*) "MAXIMUM ITERATIONS REACHED FOR DC"
+         write(*,*) "-------------------------------------"
+         EXIT ! exit loop
+       END IF
      iter = iter+1
      call nreport(67)
 
@@ -455,6 +461,12 @@ program main
      call nreport(55)
    end if
 
+     !print the sum of squared sensitivities if required
+   if(mode == 3 .and. jprnt ) then
+     call mjaco
+     call record_sens
+   end if
+   
   !invert the complex data if this is a sip inversion
    if(mode == 3 .and. i_flag) then
      call complex_inv
@@ -464,11 +476,7 @@ program main
   !inversion, invert the time lapse data files.
    if(tl_ly) call time_lapse_1 
   
-  !print the sum of squared sensitivities if required
-   if(mode == 3 .and. jprnt .and. .not. i_flag) then
-     call mjaco
-     call record_sens
-   end if
+
 
   
   !clean up and exit
@@ -518,6 +526,12 @@ contains
     call alloc_sigup
 
     do while (.not. con_flag) 
+       IF(iter+1.gt.max_iters_ip) then 
+         write(*,*) "-------------------------------------"
+         write(*,*) "MAXIMUM ITERATIONS REACHED FOR IP"
+         write(*,*) "-------------------------------------"
+         EXIT
+       END IF
        iter = iter+1
        call mjaco
        call get_jtimes
@@ -634,7 +648,6 @@ contains
        !!these are the outer iterations for this data set
        !if(rt_flag) con_flag = .false.
        do while (.not. con_flag)
-          
           iter = iter+1
           
           call treport(0)

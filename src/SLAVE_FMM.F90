@@ -99,19 +99,19 @@ module slave_fmm
         goto 100
 
      case(15) 
-        call MPI_SEND(my_frt,1,MPI_REAL,0,0,FMM_COMM,ierr)
+        call MPI_SEND(my_frt,1,MPI_DOUBLE,0,0,FMM_COMM,ierr)
         goto 100
         
      case(16)
-        call MPI_SEND(my_abt,1,MPI_REAL,0,0,FMM_COMM,ierr)
+        call MPI_SEND(my_abt,1,MPI_DOUBLE,0,0,FMM_COMM,ierr)
         goto 100
 
      case(17) 
-        call MPI_SEND(my_kspt,1,MPI_REAL,0,0,FMM_COMM,ierr)
+        call MPI_SEND(my_kspt,1,MPI_DOUBLE,0,0,FMM_COMM,ierr)
         goto 100
         
      case(18) 
-        call MPI_SEND(my_jbt,1,MPI_REAL,0,0,FMM_COMM,ierr)
+        call MPI_SEND(my_jbt,1,MPI_DOUBLE,0,0,FMM_COMM,ierr)
         goto 100
         
      case(19)
@@ -183,17 +183,17 @@ module slave_fmm
       call MPI_BCAST(tns,1,MPI_INTEGER , 0, FMM_COMM, ierr )
       ns=tns
       allocate(s_pos(tns,3))
-      call MPI_BCAST(s_pos,3*tns,MPI_REAL, 0, FMM_COMM, ierr)
+      call MPI_BCAST(s_pos,3*tns,MPI_DOUBLE, 0, FMM_COMM, ierr)
       if(.not.fresnel) then
          call MPI_BCAST(nrc,1,MPI_INTEGER , 0, FMM_COMM, ierr )
          allocate(rc_pos(nrc,3))
-         call MPI_BCAST(rc_pos,3*nrc,MPI_REAL , 0, FMM_COMM, ierr )
+         call MPI_BCAST(rc_pos,3*nrc,MPI_DOUBLE , 0, FMM_COMM, ierr )
       end if
       call MPI_BCAST(jind,2*(n_rank_fmm-1),MPI_INTEGER , 0, FMM_COMM, ierr )
       call MPI_BCAST(sind,2*(n_rank_fmm-1),MPI_INTEGER , 0, FMM_COMM, ierr )
       if(fresnel) then
          allocate(frq(tns))
-         call MPI_BCAST(frq,tns,MPI_real , 0, FMM_COMM, ierr )
+         call MPI_BCAST(frq,tns,MPI_DOUBLE , 0, FMM_COMM, ierr )
       end if
 
       my_ns = sind(my_rank_fmm,2)-sind(my_rank_fmm,1)+1
@@ -232,7 +232,7 @@ module slave_fmm
       !receive nodes from master
       call MPI_BCAST(nnodes, 1, MPI_INTEGER , 0, FMM_COMM, ierr )
       allocate(nodes(nnodes,3),nbounds(nnodes))
-      call MPI_BCAST(nodes, nnodes*3, MPI_REAL , 0, FMM_COMM, ierr )
+      call MPI_BCAST(nodes, nnodes*3, MPI_DOUBLE , 0, FMM_COMM, ierr )
       call MPI_BCAST(nbounds, nnodes, MPI_INTEGER , 0, FMM_COMM, ierr )
       
     
@@ -299,7 +299,7 @@ module slave_fmm
       
       call MPI_BCAST(nspd, 1, MPI_INTEGER, 0,FMM_COMM,ierr)
       if(.not.allocated(speed)) allocate(speed(nspd))
-      call MPI_BCAST(speed, nspd,MPI_REAL,0,FMM_COMM,ierr)
+      call MPI_BCAST(speed, nspd,MPI_DOUBLE,0,FMM_COMM,ierr)
 
     end subroutine receive_slowness
     !__________________________________________________________________
@@ -312,7 +312,7 @@ module slave_fmm
       call fmm_assemble_data
       call MPI_SEND(nmy_drows,1,MPI_INTEGER,0,0,FMM_COMM, ierr)
       call MPI_SEND(my_drows,nmy_drows,MPI_INTEGER,0,0,FMM_COMM,ierr)
-      call MPI_SEND(my_dvals,nmy_drows,MPI_REAL,0,0,FMM_COMM,ierr)
+      call MPI_SEND(my_dvals,nmy_drows,MPI_DOUBLE,0,0,FMM_COMM,ierr)
     
     end subroutine send_ttpred
     !__________________________________________________________________
@@ -327,7 +327,7 @@ module slave_fmm
 
        if(spack(1)==my_rank_fmm) then
           es=spack(2)-sind(my_rank_fmm,1) + 1
-          call MPI_SEND(ttimes(:,es),nnodes,MPI_REAL,0,0,FMM_COMM,ierr)
+          call MPI_SEND(ttimes(:,es),nnodes,MPI_DOUBLE,0,0,FMM_COMM,ierr)
        end if
 
      end subroutine send_tt

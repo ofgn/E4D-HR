@@ -35,7 +35,7 @@ contains
              if(my_rank_fmm .eq. crank) then
                 att(:,i) = ttimes(:,i-sind(crank,1)+1)
              end if
-             call MPI_BCAST(att(:,i),nnodes,MPI_REAL,crank-1,SCOMM_FMM,ierr)
+             call MPI_BCAST(att(:,i),nnodes,MPI_DOUBLE,crank-1,SCOMM_FMM,ierr)
              exit
           end if
        end do

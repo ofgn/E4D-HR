@@ -163,7 +163,7 @@ contains
           spack(2) = a
           call send_commando_fmm(23)
           call MPI_BCAST(spack,2,MPI_INTEGER,0,FMM_COMM,ierr)
-          call MPI_RECV(pa,nnodes,MPI_REAL,ra,0,FMM_COMM,status,ierr)
+          call MPI_RECV(pa,nnodes,MPI_DOUBLE,ra,0,FMM_COMM,status,ierr)
        end if
        
        

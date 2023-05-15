@@ -138,15 +138,15 @@ contains
     end if
 
     call MPI_BCAST(tns,1,MPI_INTEGER , 0, FMM_COMM, ierr )
-    call MPI_BCAST(s_pos,3*tns,MPI_REAL, 0, FMM_COMM, ierr)
+    call MPI_BCAST(s_pos,3*tns,MPI_DOUBLE, 0, FMM_COMM, ierr)
     if(.not.fresnel) then
        call MPI_BCAST(nrc,1,MPI_INTEGER , 0, FMM_COMM, ierr )
-       call MPI_BCAST(rc_pos,3*nrc,MPI_REAL , 0, FMM_COMM, ierr )
+       call MPI_BCAST(rc_pos,3*nrc,MPI_DOUBLE , 0, FMM_COMM, ierr )
     end if
     call MPI_BCAST(jind,2*(n_rank_fmm-1),MPI_INTEGER , 0, FMM_COMM, ierr )
     call MPI_BCAST(sind,2*(n_rank_fmm-1),MPI_INTEGER , 0, FMM_COMM, ierr )
     if(fresnel) then
-       call MPI_BCAST(frq,tns,MPI_real , 0, FMM_COMM, ierr )
+       call MPI_BCAST(frq,tns,MPI_DOUBLE , 0, FMM_COMM, ierr )
     end if
     call nreport_fmm(64)
   end subroutine send_dists_fmm
@@ -187,7 +187,7 @@ contains
 
     !send everything to slave
     call MPI_BCAST(nnodes, 1, MPI_INTEGER , 0, FMM_COMM, ierr )
-    call MPI_BCAST(nodes, nnodes*3, MPI_REAL , 0, FMM_COMM, ierr )
+    call MPI_BCAST(nodes, nnodes*3, MPI_DOUBLE , 0, FMM_COMM, ierr )
     call MPI_BCAST(nbounds, nnodes, MPI_INTEGER , 0, FMM_COMM, ierr )
     call MPI_BCAST(nelem, 1, MPI_INTEGER, 0,FMM_COMM,ierr)
     call MPI_BCAST(elements, nelem*4,MPI_INTEGER,0,FMM_COMM,ierr)
@@ -236,7 +236,7 @@ contains
     ntot=0
     lrep=ts
     do i=1,tns
-       call MPI_RECV(pck,2,MPI_REAL,MPI_ANY_SOURCE,1,FMM_COMM,status,ierr)
+       call MPI_RECV(pck,2,MPI_DOUBLE,MPI_ANY_SOURCE,1,FMM_COMM,status,ierr)
    
        rtm=pck(1)
        itm=int(pck(2))
@@ -620,7 +620,7 @@ contains
 
     call send_command_fmm(4)
     call MPI_BCAST(nspd, 1, MPI_INTEGER, 0,FMM_COMM,ierr)
-    call MPI_BCAST(speed, nspd,MPI_REAL,0,FMM_COMM,ierr)
+    call MPI_BCAST(speed, nspd,MPI_DOUBLE,0,FMM_COMM,ierr)
 
    end subroutine send_slowness
   !____________________________________________________________________
@@ -649,7 +649,7 @@ contains
     do i=1,n_rank_fmm-1
        call MPI_RECV(nbuff,1,MPI_INTEGER,i,0,FMM_COMM,status,ierr)
        call MPI_RECV(ibuff(1:nbuff),nbuff,MPI_INTEGER,i,0,FMM_COMM,status,ierr)
-       call MPI_RECV(rbuff(1:nbuff),nbuff,MPI_REAL,i,0,FMM_COMM,status,ierr)
+       call MPI_RECV(rbuff(1:nbuff),nbuff,MPI_DOUBLE,i,0,FMM_COMM,status,ierr)
        
        do j=1,nbuff
           ttpred(ibuff(j))=ttpred(ibuff(j))+rbuff(j)

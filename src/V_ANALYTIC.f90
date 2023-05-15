@@ -1,3 +1,9 @@
+! Changelog 
+! 7/4/23 - OFGN
+! Use phase rather than phase/resistance
+! Max phase set to the current measurement rather than the running total
+! Min phase set to the current measurement rather than the running total
+
 module v_analytic
 
   use vars
@@ -120,11 +126,10 @@ contains
          mxphz=0
          cc=0
          do i=1,nm
-            phzi= -dobsi(i)/dobs(i)
-           
-            if(phzi>0) then
-               if(phzi>mxphz) mxphz=phz
-               if(phzi<mnphz) mnphz=phz
+            phzi= -dobsi(i) ! Use phase rather than phase/resistance - OFGN 7/4/23
+            if(phzi>0) then 
+               if(phzi>mxphz) mxphz=phz ! Max phase set to the current measurement rather than the running total - OFGN 7/4/23
+               if(phzi<mnphz) mnphz=phz ! Min phase set to the current measurement rather than the running total - OFGN 7/4/23
                phz=phz+phzi
                cc=cc+1
             end if

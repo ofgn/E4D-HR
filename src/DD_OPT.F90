@@ -249,9 +249,9 @@ contains
     if(allocated(Wd)) deallocate(Wd)
     allocate(dobs(nm),dpred(nm),Wd(nm))
 
-    call MPI_BCAST(dobs,nm,MPI_REAL , 1, E4D_COMM, ierr )
-    call MPI_BCAST(dpred,nm,MPI_REAL , 1, E4D_COMM, ierr )
-    call MPI_BCAST(Wd,nm,MPI_REAL , 1, E4D_COMM, ierr )
+    call MPI_BCAST(dobs,nm,MPI_DOUBLE , 1, E4D_COMM, ierr )
+    call MPI_BCAST(dpred,nm,MPI_DOUBLE , 1, E4D_COMM, ierr )
+    call MPI_BCAST(Wd,nm,MPI_DOUBLE , 1, E4D_COMM, ierr )
    
   end subroutine update_data_vecs
   !__________________________________________________________________
@@ -368,7 +368,7 @@ contains
     do r = 1,n_rank -1
        do i=1,dd_ngroups
           call MPI_RECV(test_grp,dd_gsize*4, MPI_INTEGER,r,tag, E4D_COMM, status, ierr)
-          call MPI_RECV(test_dr,dd_gsize, MPI_REAL,r,tag,E4D_COMM, status, ierr)
+          call MPI_RECV(test_dr,dd_gsize, MPI_DOUBLE,r,tag,E4D_COMM, status, ierr)
               
           dr_sum = sum(test_dr)
        
@@ -465,9 +465,9 @@ contains
   subroutine send_dd_opts
     implicit none
     call send_command(1000)
-    call MPI_BCAST(dd_alph,1,MPI_REAL,0,E4D_COMM,ierr)
-    call MPI_BCAST(dd_bet,1,MPI_REAL,0,E4D_COMM,ierr)
-    call MPI_BCAST(dd_thrsh,1,MPI_REAL,0,E4D_COMM,ierr)
+    call MPI_BCAST(dd_alph,1,MPI_DOUBLE,0,E4D_COMM,ierr)
+    call MPI_BCAST(dd_bet,1,MPI_DOUBLE,0,E4D_COMM,ierr)
+    call MPI_BCAST(dd_thrsh,1,MPI_DOUBLE,0,E4D_COMM,ierr)
     call MPI_BCAST(dd_gsize,1,MPI_INTEGER,0,E4D_COMM,ierr)
     call MPI_BCAST(dd_ngroups,1,MPI_INTEGER,0,E4D_COMM,ierr)
     call MPI_BCAST(dd_add,1,MPI_INTEGER,0,E4D_COMM,ierr)
@@ -792,7 +792,7 @@ contains
              end do
           end do
         
-          call MPI_BCAST(tpol,tne,MPI_REAL,0,E4D_COMM,ierr)
+          call MPI_BCAST(tpol,tne,MPI_DOUBLE,0,E4D_COMM,ierr)
        end do
     end do
     

@@ -129,26 +129,26 @@ implicit none
              eindx(1) = source_nodes(enum,j)
              val = source_currents(enum,j)
              call VecSetValues(B,p_int,eindx(1)-1,val,ADD_VALUES,perr)
-          end do
-          if(tank_flag) then
-             eindx(1)=e_nods(tne)
-             val = -1.0
-             call VecSetValues(B,p_int,eindx(1)-1,val,ADD_VALUES,perr)
-          end if
-       end if
+         end do
+         if(tank_flag) then
+            eindx(1)=e_nods(tne)
+            val = -1.0
+            call VecSetValues(B,p_int,eindx(1)-1,val,ADD_VALUES,perr)
+         end if
+      end if
 #else
-       p_int = 1
-       !call VecSetValues(B,p_int,eindx(1)-1,val,ADD_VALUES,perr)
-       do j=1,4
-          eindx(1) = source_nodes(enum,j)
-          val = source_currents(enum,j)
-          call VecSetValues(B,p_int,eindx(1)-1,val,ADD_VALUES,perr)
-       end do
-       if(tank_flag) then
-          eindx(1)=e_nods(tne)
-          val = -1.0
-          call VecSetValues(B,p_int,eindx(1)-1,val,ADD_VALUES,perr)
-       end if
+      p_int = 1
+      !call VecSetValues(B,p_int,eindx(1)-1,val,ADD_VALUES,perr)
+      do j=1,4
+         eindx(1) = source_nodes(enum,j)
+         val = source_currents(enum,j)
+         call VecSetValues(B,p_int,eindx(1)-1,val,ADD_VALUES,perr)
+      end do
+      if(tank_flag) then
+         eindx(1)=e_nods(tne)
+         val = -1.0
+         call VecSetValues(B,p_int,eindx(1)-1,val,ADD_VALUES,perr)
+      end if
 #endif
        
        call VecAssemblyBegin(B,perr)
@@ -167,7 +167,7 @@ implicit none
        pck(1)=tend-tstart
        pck(2)=real(niter)
        
-       call MPI_SEND(pck,2,MPI_REAL,0,1,E4D_COMM,ierr)
+       call MPI_SEND(pck,2,MPI_DOUBLE,0,1,E4D_COMM,ierr)
 
     end do
 
@@ -252,7 +252,7 @@ implicit none
        call cpu_time(tend)
        pck(1)=tend-tstart
        pck(2)=real(niter)
-       call MPI_SEND(pck,2,MPI_REAL,0,1,E4D_COMM,ierr)
+       call MPI_SEND(pck,2,MPI_DOUBLE,0,1,E4D_COMM,ierr)
        
     end do
  
@@ -566,7 +566,7 @@ implicit none
 
     !distribute the source currents and source nodes
     call MPI_ALLREDUCE(MPI_IN_PLACE,source_nodes,tne*4,MPI_INTEGER,MPI_SUM,SCOMM,ierr)
-    call MPI_ALLREDUCE(MPI_IN_PLACE,source_currents,tne*4,MPI_REAL,MPI_SUM,SCOMM,ierr)
+    call MPI_ALLREDUCE(MPI_IN_PLACE,source_currents,tne*4,MPI_DOUBLE,MPI_SUM,SCOMM,ierr)
  
   end subroutine compute_source_currents
   !____________________________________________________________________

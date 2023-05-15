@@ -378,12 +378,12 @@ contains
 
        !add the u vectors for each type of physics to get u = B1*p1 + B2*p2
        !this can be implemented with MPI_ALLREDUCE
-       !*call MPI_ALLREDUCE(MPI_IN_PLACE,u,size_of_u,MPI_REAL,MPI_SUM,M_COMM,ierr)
+       !*call MPI_ALLREDUCE(MPI_IN_PLACE,u,size_of_u,MPI_DOUBLE,MPI_SUM,M_COMM,ierr)
 
        !compute my part of delta and then add the delta from the other physics using
        !MPI_ALLREDUCE again, then add u*trans(u)
        !*delta = dot_product(q,q) 
-       !*call MPI_ALLREDUCE(MPI_IN_PLACE,delta,1,MPI_REAL,MPI_SUM,M_COMM,ierr)
+       !*call MPI_ALLREDUCE(MPI_IN_PLACE,delta,1,MPI_DOUBLE,MPI_SUM,M_COMM,ierr)
        !*delta = dot_product(u,u)
        
        if(delta <= 0) then
@@ -396,7 +396,7 @@ contains
 
        !compute the gamma sum
        !*gamma = dot_product(s,s)
-       !*call MPI_ALLREDUCE(MPI_IN_PLACE,gamma,1,MPI_REAL,MPI_SUM,M_COMM,ierr)
+       !*call MPI_ALLREDUCE(MPI_IN_PLACE,gamma,1,MPI_DOUBLE,MPI_SUM,M_COMM,ierr)
       
        alpha = gamma/delta
        
@@ -412,7 +412,7 @@ contains
        gamma1 = gamma
        gamma = norms*norms
        !add the component of gamma from the other physics
-       !*call MPI_ALLREDUCE(MPI_IN_PLACE,gamma,1,MPI_REAL,MPI_SUM,M_COMM,ierr)
+       !*call MPI_ALLREDUCE(MPI_IN_PLACE,gamma,1,MPI_DOUBLE,MPI_SUM,M_COMM,ierr)
        
        gbeta = gamma/gamma1
        p = s + gbeta*p

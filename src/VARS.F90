@@ -3,16 +3,18 @@ module vars
 #ifdef petsc_7
 implicit none
 #include "petsc/finclude/petscsys.h"
-#include "petsc/finclude/petscvec.h"
-#include "petsc/finclude/petscvec.h90"
-#include "petsc/finclude/petscmat.h"
-#include "petsc/finclude/petscmat.h90"
-#include "petsc/finclude/petscviewer.h"
-#include "petsc/finclude/petscviewer.h90"  
-#include "petsc/finclude/petscksp.h"
-#include "petsc/finclude/petscksp.h90"
+#include "finclude/petscvec.h"
+#include "finclude/petscvec.h90"
+#include "finclude/petscmat.h"
+#include "finclude/petscmat.h90"
+#include "finclude/petscviewer.h"
+#include "finclude/petscviewer.h90"  
+#include "finclude/petscksp.h"
+#include "finclude/petscksp.h90"
 #else
 #include "petsc/finclude/petscksp.h"
+
+
 use petscksp
 implicit none
 #endif
@@ -30,6 +32,8 @@ implicit none
   character*40 :: tmpstr                                   !!shareable string
   
   !Integers
+  integer :: max_iters_dc=999, max_iters_ip=999                    !! maximum number of iterations to run for each type of inversion, dc and IP
+  integer :: IP_param_type=0                               !! type of parameter for IP. 0 for phase, 1 for int charge, 2 for PFE%
   integer :: my_rank                                       !!my mpi rank
   integer :: ierr                                          !!generall error
   integer :: n_rank                                        !!number of processes
@@ -72,6 +76,7 @@ implicit none
   integer :: n_met                                         !!number of metallic inclosures in the mesh
 
   !Reals
+  real :: Scale_factor=1.0                                 !! linear scale factor if using int chargeability or PFE
   real :: Cstart,Cend,etm,etm1,etm2,Cbeg,sbt               !!timing variables
   real :: rt_min,rt_max,abmin,abmax                        !!max and min run times, A build times
   real :: kspmax,kspmin,jmax,jmin

@@ -68,33 +68,33 @@ contains
                 !else
                    pa=poles(:,s_conf(1,di)-eind(my_rank,1)+1)
                 !end if
-                call MPI_BCAST(pa,nnodes,MPI_REAL,mown-1,SCOMM,ierr)
+                call MPI_BCAST(pa,nnodes,MPI_DOUBLE,mown-1,SCOMM,ierr)
              case(2)
                 !if(invi) then
                 !   pb=polesi(:,s_conf(1,di)-eind(my_rank,1)+1)
                 !else
                    pb=poles(:,s_conf(1,di)-eind(my_rank,1)+1)
                 !end if
-                call MPI_BCAST(pb,nnodes,MPI_REAL,mown-1,SCOMM,ierr)
+                call MPI_BCAST(pb,nnodes,MPI_DOUBLE,mown-1,SCOMM,ierr)
              case(3)
                 pm=poles(:,s_conf(1,di)-eind(my_rank,1)+1)
-                call MPI_BCAST(pm,nnodes,MPI_REAL,mown-1,SCOMM,ierr)
+                call MPI_BCAST(pm,nnodes,MPI_DOUBLE,mown-1,SCOMM,ierr)
              case(4)
                 pn=poles(:,s_conf(1,di)-eind(my_rank,1)+1)
-                call MPI_BCAST(pn,nnodes,MPI_REAL,mown-1,SCOMM,ierr)
+                call MPI_BCAST(pn,nnodes,MPI_DOUBLE,mown-1,SCOMM,ierr)
              end select
        
           else
 
              select case(di)
              case(1)
-                call MPI_BCAST(pa,nnodes,MPI_REAL,mown-1,SCOMM,ierr)
+                call MPI_BCAST(pa,nnodes,MPI_DOUBLE,mown-1,SCOMM,ierr)
              case(2)
-                call MPI_BCAST(pb,nnodes,MPI_REAL,mown-1,SCOMM,ierr)
+                call MPI_BCAST(pb,nnodes,MPI_DOUBLE,mown-1,SCOMM,ierr)
              case(3)
-                call MPI_BCAST(pm,nnodes,MPI_REAL,mown-1,SCOMM,ierr)
+                call MPI_BCAST(pm,nnodes,MPI_DOUBLE,mown-1,SCOMM,ierr)
              case(4)
-                call MPI_BCAST(pn,nnodes,MPI_REAL,mown-1,SCOMM,ierr)
+                call MPI_BCAST(pn,nnodes,MPI_DOUBLE,mown-1,SCOMM,ierr)
              end select
                 
           end if
@@ -161,7 +161,7 @@ contains
           else
 
              if(ra .ne. 0) then
-                call MPI_RECV(pa, nnodes, MPI_REAL, ra,a, E4D_COMM, status, ierr)
+                call MPI_RECV(pa, nnodes, MPI_DOUBLE, ra,a, E4D_COMM, status, ierr)
              end if
 
           end if
@@ -179,7 +179,7 @@ contains
           else
 
              if(rb .ne. 0) then
-                call MPI_RECV(pb, nnodes, MPI_REAL, rb,b, E4D_COMM, status, ierr) 
+                call MPI_RECV(pb, nnodes, MPI_DOUBLE, rb,b, E4D_COMM, status, ierr) 
              end if
           end if
           !end if
@@ -190,7 +190,7 @@ contains
              pm=poles(:,m-eind(my_rank,1)+1)
           else
              if(rm .ne. 0) then
-                call MPI_RECV(pm, nnodes, MPI_REAL, rm,m, E4D_COMM, status, ierr)
+                call MPI_RECV(pm, nnodes, MPI_DOUBLE, rm,m, E4D_COMM, status, ierr)
              end if
           end if
           !end if
@@ -200,7 +200,7 @@ contains
              pn = poles(:,n-eind(my_rank,1)+1)
           else 
              if(rn .ne. 0) then
-                call MPI_RECV(pn, nnodes, MPI_REAL, rn,n, E4D_COMM, status, ierr)
+                call MPI_RECV(pn, nnodes, MPI_DOUBLE, rn,n, E4D_COMM, status, ierr)
              end if
           end if
           !end if
@@ -221,7 +221,7 @@ contains
              !else
                 pa = poles(:,a-eind(my_rank,1)+1)
              !end if
-             call MPI_SEND(pa,nnodes,MPI_REAL,mown,a,E4D_COMM, ierr)
+             call MPI_SEND(pa,nnodes,MPI_DOUBLE,mown,a,E4D_COMM, ierr)
              
           end if
           !end if
@@ -233,21 +233,21 @@ contains
              !else
                 pb = poles(:,b-eind(my_rank,1)+1)
              !end if
-             call MPI_SEND(pb,nnodes,MPI_REAL,mown,b,E4D_COMM, ierr)
+             call MPI_SEND(pb,nnodes,MPI_DOUBLE,mown,b,E4D_COMM, ierr)
           end if
           !end if
 
           !if(m .ne. m_old) then
           if(rm==my_rank) then
              pm = poles(:,m-eind(my_rank,1)+1)
-             call MPI_SEND(pm,nnodes,MPI_REAL,mown,m,E4D_COMM, ierr)
+             call MPI_SEND(pm,nnodes,MPI_DOUBLE,mown,m,E4D_COMM, ierr)
           end if
           !end if
 
           !if(n .ne. n_old) then
           if(rn==my_rank) then
              pn = poles(:,n-eind(my_rank,1)+1)
-             call MPI_SEND(pn,nnodes,MPI_REAL,mown,n,E4D_COMM, ierr)
+             call MPI_SEND(pn,nnodes,MPI_DOUBLE,mown,n,E4D_COMM, ierr)
           end if
           !end if
        end if

@@ -773,8 +773,8 @@ contains
     real :: dummy
 
     call send_command(14)
-    call MPI_BCAST(vk,nelem,MPI_REAL,0,E4D_COMM,ierr)
-    call MPI_GATHERV(dummy,0,MPI_REAL,dk,recvcounts,displs,MPI_REAL,0,E4D_COMM,ierr)
+    call MPI_BCAST(vk,nelem,MPI_DOUBLE,0,E4D_COMM,ierr)
+    call MPI_GATHERV(dummy,0,MPI_DOUBLE,dk,recvcounts,displs,MPI_DOUBLE,0,E4D_COMM,ierr)
     return
 
   end subroutine vk_matmul
@@ -788,8 +788,8 @@ contains
     real :: dummy
 
     call send_command(25)
-    call MPI_BCAST(k,1,MPI_REAL,0,E4D_COMM,ierr)
-    call MPI_GATHERV(dummy,0,MPI_REAL,dk,recvcounts,displs,MPI_REAL,0,E4D_COMM,ierr)
+    call MPI_BCAST(k,1,MPI_DOUBLE,0,E4D_COMM,ierr)
+    call MPI_GATHERV(dummy,0,MPI_DOUBLE,dk,recvcounts,displs,MPI_DOUBLE,0,E4D_COMM,ierr)
     return
 
   end subroutine get_Jcol
