@@ -178,7 +178,7 @@ contains
        if(trim(chk_sigfile)=="average") then
           ave_sig = .true.
        end if
-       read(10,*,IOSTAT=ios) outfile;             call check_inp(5,junk)
+       read(10,*) outfile;             call check_inp(5,junk)
     end if
     if(analytic) return
 
@@ -462,7 +462,7 @@ contains
 
        read(10,*) smetric(i,2),zwts(i,2:4) ;  call check_inv_opts(11,i)
 
-       if(smetric(i,2) .eq. 12 .or. smetric(i,2) .eq.13) then
+       if(smetric(i,2) .eq. 12 ) then !.or. smetric(i,2) .eq.13
           !structural metric 12 and 13 specify cross gradient
           !joint inversion for velocity and conductivity so 
           !both e4d and fmm must be running
@@ -3085,6 +3085,8 @@ contains
        e_pos(junk,1:4)=etmp
     end do
     
+    
+    call check_keywords(10)
 
     !!Read in the survey
     read(10,*,IOSTAT=ios) nm;     call check_inp(17,nm)
@@ -3134,6 +3136,103 @@ contains
   end subroutine read_survey
   !_________________________________________________________________________
 
+  !_________________________________________________________________________
+  
+    subroutine check_keywords(FHNDL)
+    ! ------------------------------------------------------
+    !
+    ! Checks the file already open on index (FHNDL) for keywords on the current line. Backspaces at the end when it runs out of keywords.
+    ! Keywords MUST start with a letter. Cannot contain a colon ":"
+    !
+    ! Input: 
+    !        FHNDL (int) - file handler of file already open to be read
+    ! Output: 
+    !        Nothing
+    ! 
+    ! Global Var Changes:
+    !        Updates global vars if associated keywords are found:
+    !          IP_param_type (int)
+    !          Scale_Factor  (int)
+    !
+    ! ------------------------------------------------------
+    implicit none
+    
+    integer, intent(in)              :: FHNDL
+    integer                          :: i,j, k, IOS, len_arg, keywords_read
+    character(len=256), dimension(4) :: keywords
+    character(len=256)               :: keyword, arg
+    character(len=512)               :: TSTR, trimTSTR, junk
+    logical                          :: read_2_far=.False.
+    
+    keywords(1)="IP_PARAM_TYPE" ! type of IP param as defined in VARS
+    keywords(2)="SCALE_FACTOR"  ! scales IP values by set amount, default is 1
+    keywords(3)="MAX_ITERS_DC"     ! maximum number of iterations for a DC (real) inversion 
+    keywords(4)="MAX_ITERS_IP"     ! maximum number of iterations for an IP (complex) inversion 
+    
+    keywords_read=0
+    
+    do i=1, 10
+      read(FHNDL,*, IOSTAT= IOS) TSTR
+      trimTSTR=ADJUSTL(TSTR)      
+      if(SCAN(trimTSTR(1:1),"12456789").gt.0) then
+        read_2_far=.true.
+        EXIT !no keyword, instead a number, indicating no more keywords
+      end if
+      
+      if(keywords_read.ge.size(keywords)) EXIT ! if no more keywords left
+      IF(IOS.ne.0) then
+        write(*,*) "ERROR! IOS ne 0 in CHECK_KEYWORDS"
+        call crash_exit
+      end if
+      
+
+      ! Read the keyword
+      do j=1, 256
+        if( trimTSTR(j:j) .eq."=") then
+          keyword=trimTSTR(1:j-1)
+          len_arg=0
+          !find length of argument
+          do k=j+1, 256
+            IF(trimTSTR(k:k).eq.' ') EXIT
+            len_arg=len_arg+1
+          end do
+          arg=trimTSTR(j:j+len_arg-1)
+          !grab keyword. Not sure if there's a better way to do this than hardcoding. Maybe an array of parameters?
+          ! Perhaps use a select case with a lookup number
+          if      (keyword.eq.trim(keywords(1))) then
+            READ(trimTSTR(j+1:),*) IP_Param_type
+          else if (keyword.eq.trim(keywords(2))) then
+            READ(trimTSTR(j+1:),*) Scale_Factor       
+          else if (keyword.eq.trim(keywords(3))) then
+            READ(trimTSTR(j+1:),*) max_iters_dc       
+          else if (keyword.eq.trim(keywords(4))) then
+            READ(trimTSTR(j+1:),*) max_iters_ip       
+          else
+            write(*,*) "ERROR! UNKNOWN KEYWORD DETECTED IN .SRV FILE. EXITING"
+            call crash_exit
+          end if
+          ! Now that we've read the keyword, exit keyword read loop.
+          keywords_read=keywords_read+1
+          EXIT
+        end if
+      end do
+      
+    end do
+    
+    if(read_2_far) BACKSPACE(FHNDL, IOSTAT=IOS)  ! If we've readthe number of measurements go back 1.
+    IF(IOS.ne.0) then 
+      write(*,*) "ERROR! IOS ne 0 in CHECK_KEYWORDS"
+      call crash_exit
+    end if
+    
+    
+    
+  end subroutine
+  
+  
+  
+  !_________________________________________________________________________
+  
   !_________________________________________________________________________
   subroutine translate_electrodes
     implicit none
@@ -3335,7 +3434,7 @@ contains
         if(trim(chk_sigfile)=="average") then
            ave_sig = .true.
         end if
-        read(10,*,IOSTAT=ios) outfile;             call check_inp(5,junk)
+        read(10,*) outfile;             call check_inp(5,junk)
         
         ! check for inversion options file entry in file (not complex inversion file)
         if (i_flag) then

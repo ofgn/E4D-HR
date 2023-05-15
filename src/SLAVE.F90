@@ -102,19 +102,19 @@ module slave
         goto 100
 
      case(15) 
-        call MPI_SEND(my_frt,1,MPI_REAL,0,0,E4D_COMM,ierr)
+        call MPI_SEND(my_frt,1,MPI_DOUBLE,0,0,E4D_COMM,ierr)
         goto 100
         
      case(16)
-        call MPI_SEND(my_abt,1,MPI_REAL,0,0,E4D_COMM,ierr)
+        call MPI_SEND(my_abt,1,MPI_DOUBLE,0,0,E4D_COMM,ierr)
         goto 100
 
      case(17) 
-        call MPI_SEND(my_kspt,1,MPI_REAL,0,0,E4D_COMM,ierr)
+        call MPI_SEND(my_kspt,1,MPI_DOUBLE,0,0,E4D_COMM,ierr)
         goto 100
         
      case(18) 
-        call MPI_SEND(my_jbt,1,MPI_REAL,0,0,E4D_COMM,ierr)
+        call MPI_SEND(my_jbt,1,MPI_DOUBLE,0,0,E4D_COMM,ierr)
         goto 100
         
      case(19)
@@ -299,7 +299,7 @@ module slave
 
       call MPI_BCAST(tne, 1, MPI_INTEGER , 0, E4D_COMM, ierr )
       allocate(e_pos(tne,4))
-      call MPI_BCAST(e_pos,4*tne,MPI_REAL,0,E4D_COMM,ierr)
+      call MPI_BCAST(e_pos,4*tne,MPI_DOUBLE,0,E4D_COMM,ierr)
       call MPI_BCAST(jind,2*(n_rank-1),MPI_INTEGER , 0, E4D_COMM, ierr )
       call MPI_BCAST(eind,2*(n_rank-1),MPI_INTEGER , 0, E4D_COMM, ierr )
 
@@ -350,7 +350,7 @@ module slave
       !receive nodes from master
       call MPI_BCAST(nnodes, 1, MPI_INTEGER , 0, E4D_COMM, ierr )
       allocate(nodes(nnodes,3),nbounds(nnodes))
-      call MPI_BCAST(nodes, nnodes*3, MPI_REAL , 0, E4D_COMM, ierr )
+      call MPI_BCAST(nodes, nnodes*3, MPI_DOUBLE , 0, E4D_COMM, ierr )
       call MPI_BCAST(nbounds, nnodes, MPI_INTEGER , 0, E4D_COMM, ierr )
       
     
@@ -652,7 +652,7 @@ module slave
       
       call MPI_BCAST(nsig, 1, MPI_INTEGER, 0,E4D_COMM,ierr)
       if(.not.allocated(sigma)) allocate(sigma(nsig))
-      call MPI_BCAST(sigma, nsig,MPI_REAL,0,E4D_COMM,ierr)
+      call MPI_BCAST(sigma, nsig,MPI_DOUBLE,0,E4D_COMM,ierr)
 
     end subroutine receive_sigma
     !__________________________________________________________________
@@ -663,7 +663,7 @@ module slave
       implicit none      
       integer :: i
       if(.not.allocated(sigmai)) allocate(sigmai(nsig))
-      call MPI_BCAST(sigmai, nsig,MPI_REAL,0,E4D_COMM,ierr)
+      call MPI_BCAST(sigmai, nsig,MPI_DOUBLE,0,E4D_COMM,ierr)
      
     end subroutine receive_sigmai
     !__________________________________________________________________
@@ -685,7 +685,7 @@ module slave
       call assemble_data(flg)
       call MPI_SEND(nmy_drows,1,MPI_INTEGER,0,0,COMM, ierr)
       call MPI_SEND(my_drows,nmy_drows,MPI_INTEGER,0,0,COMM,ierr)
-      call MPI_SEND(my_dvals,nmy_drows,MPI_REAL,0,0,COMM,ierr)
+      call MPI_SEND(my_dvals,nmy_drows,MPI_DOUBLE,0,0,COMM,ierr)
     
     end subroutine send_dpred
     !__________________________________________________________________
@@ -707,7 +707,7 @@ module slave
        end if
        allocate(Wdt(nm))
 
-       call MPI_BCAST(Wdt,nm,MPI_REAL,0,COMM,ierr)
+       call MPI_BCAST(Wdt,nm,MPI_DOUBLE,0,COMM,ierr)
  
        if(im_fmm) then
           do i=1,jind(my_rank_fmm,2) - jind(my_rank_fmm,1) + 1
@@ -735,7 +735,7 @@ module slave
        integer :: COMM
 
       
-       call MPI_BCAST(Wdt,nm,MPI_REAL,0,E4D_COMM,ierr)
+       call MPI_BCAST(Wdt,nm,MPI_DOUBLE,0,E4D_COMM,ierr)
        
        do i=1,jind(my_rank,2) - jind(my_rank,1) + 1
           row = jind(my_rank,1) + i-1
@@ -770,7 +770,7 @@ module slave
        !call MPI_BCAST(m,1,MPI_INTEGER,0,E4D_COMM,ierr)
        
        !allocate(x(m))
-       call MPI_BCAST(X2,nm,MPI_REAL,0,COMM,ierr)
+       call MPI_BCAST(X2,nm,MPI_DOUBLE,0,COMM,ierr)
       
        !allocate(sol(nelem))
        sol2 = 0
@@ -787,12 +787,12 @@ module slave
           sol2(i) = (dot_product((Jaco(:,i)),(X2(ind1:ind2))))
        end do
       
-       call MPI_REDUCE(sol2,sol2,nelem,MPI_REAL,MPI_SUM,0,COMM,ierr)
+       call MPI_REDUCE(sol2,sol2,nelem,MPI_DOUBLE,MPI_SUM,0,COMM,ierr)
       
        return
 
        !!Return the solution to master
-       call MPI_SEND(sol2,nelem,MPI_REAL,0,tag,COMM, ierr)
+       call MPI_SEND(sol2,nelem,MPI_DOUBLE,0,tag,COMM, ierr)
       
      end subroutine compute_pmatvec2
      !__________________________________________________________________
@@ -834,7 +834,7 @@ module slave
        return
 
        !!Return the solution to master
-       !!call MPI_SEND(sol2,nelem,MPI_REAL,0,tag,E4D_COMM, ierr)
+       !!call MPI_SEND(sol2,nelem,MPI_DOUBLE,0,tag,E4D_COMM, ierr)
       
      end subroutine compute_pmatvec2_dbl
      !__________________________________________________________________
@@ -874,13 +874,13 @@ module slave
        end if
        tag = 0
    
-       call MPI_BCAST(col,1,MPI_REAL,0,COMM,ierr)
+       call MPI_BCAST(col,1,MPI_DOUBLE,0,COMM,ierr)
        
        do i=1,nj_rows
           sol1(i) = Jaco(i,col)
        end do
        
-       call MPI_GATHERV(sol1,nj_rows,MPI_REAL,dummy,recvcnts,displs,MPI_REAL,0,COMM,ierr)
+       call MPI_GATHERV(sol1,nj_rows,MPI_DOUBLE,dummy,recvcnts,displs,MPI_DOUBLE,0,COMM,ierr)
        return
      end subroutine send_Jcol
     !__________________________________________________________________
@@ -910,7 +910,7 @@ module slave
        
        !call MPI_BCAST(n,1,MPI_INTEGER,0,E4D_COMM,ierr)
        !allocate(x(n))
-       call MPI_BCAST(X1,nelem,MPI_REAL,0,COMM,ierr)
+       call MPI_BCAST(X1,nelem,MPI_DOUBLE,0,COMM,ierr)
        
        !nrows = jind(my_rank,2) - jind(my_rank,1) + 1
        !allocate(sol(nrows))
@@ -920,11 +920,11 @@ module slave
           sol1(i) = (dot_product((Jaco(i,:)),(X1)))
        end do
        
-       call MPI_GATHERV(sol1,nj_rows,MPI_REAL,dummy,recvcnts,displs,MPI_REAL,0,COMM,ierr)
+       call MPI_GATHERV(sol1,nj_rows,MPI_DOUBLE,dummy,recvcnts,displs,MPI_DOUBLE,0,COMM,ierr)
        return
        
        !!Return the solution to master
-       call MPI_SEND(sol1,nj_rows,MPI_REAL,0,tag,E4D_COMM, ierr)
+       call MPI_SEND(sol1,nj_rows,MPI_DOUBLE,0,tag,E4D_COMM, ierr)
       
      end subroutine compute_pmatvec1
     !__________________________________________________________________
@@ -961,12 +961,12 @@ module slave
           sol1(i) = real(dot_product(dble(Jaco(i,:)),X1d))
        end do
       
-       call MPI_GATHERV(sol1,nj_rows,MPI_REAL,dummy,idummy,idummy,MPI_REAL,0,COMM,ierr)
+       call MPI_GATHERV(sol1,nj_rows,MPI_DOUBLE,dummy,idummy,idummy,MPI_DOUBLE,0,COMM,ierr)
       
        return
        
        !!Return the solution to master
-       call MPI_SEND(sol1,nj_rows,MPI_REAL,0,tag,COMM, ierr)
+       call MPI_SEND(sol1,nj_rows,MPI_DOUBLE,0,tag,COMM, ierr)
       
      end subroutine compute_pmatvec1_dbl
     !__________________________________________________________________
@@ -1002,7 +1002,7 @@ module slave
        return
 
        !!Return the solution to master
-       call MPI_SEND(sol2,nelem,MPI_REAL,0,tag,E4D_COMM, ierr)
+       call MPI_SEND(sol2,nelem,MPI_DOUBLE,0,tag,E4D_COMM, ierr)
       
      end subroutine compute_pmatvec2i
      !__________________________________________________________________
@@ -1035,7 +1035,7 @@ module slave
        return
        
        !!Return the solution to master
-       call MPI_SEND(sol1,nj_rows,MPI_REAL,0,tag,E4D_COMM, ierr)
+       call MPI_SEND(sol1,nj_rows,MPI_DOUBLE,0,tag,E4D_COMM, ierr)
       
      end subroutine compute_pmatvec1i
     !__________________________________________________________________
@@ -1108,7 +1108,7 @@ module slave
 
        if(spack(1)==my_rank) then
           es=spack(2)-eind(my_rank,1) + 1
-          call MPI_SEND(poles(:,es),nnodes,MPI_REAL,0,0,E4D_COMM,ierr)
+          call MPI_SEND(poles(:,es),nnodes,MPI_DOUBLE,0,0,E4D_COMM,ierr)
        end if
 
      end subroutine send_pot
@@ -1124,7 +1124,7 @@ module slave
        
        if(spack(1)==my_rank) then
           es=spack(2)-eind(my_rank,1) + 1
-          call MPI_SEND(real(polesi(:,es)),nnodes,MPI_REAL,0,0,E4D_COMM,ierr)
+          call MPI_SEND(real(polesi(:,es)),nnodes,MPI_DOUBLE,0,0,E4D_COMM,ierr)
        end if
        
      end subroutine send_poti
@@ -1150,7 +1150,7 @@ module slave
           !sens(i)=sum(Jaco(1:njaco,i))
        end do
        
-       call MPI_SEND(sens,nelem,MPI_REAL,0,tag,COMM,ierr)
+       call MPI_SEND(sens,nelem,MPI_DOUBLE,0,tag,COMM,ierr)
      
        deallocate(sens)
        
@@ -1163,7 +1163,7 @@ module slave
        implicit none
        integer :: njaco,i,tag,ierr
        njaco = jind(my_rank,2)-jind(my_rank,1)+1
-       call MPI_SEND(Jaco,njaco*nelem,MPI_REAL,0,my_rank,E4D_COMM,ierr)
+       call MPI_SEND(Jaco,njaco*nelem,MPI_DOUBLE,0,my_rank,E4D_COMM,ierr)
      end subroutine send_full_jaco
     !__________________________________________________________________
 
