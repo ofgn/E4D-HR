@@ -18,9 +18,9 @@ MPICC="mpiicc -cc=icx"
 MPICXX="mpiicpc -cxx=icpx"
 
 # Defining compiler optimisations
-FOPTFLAGS="-Ofast -march=native -mtune=native"
-COPTFLAGS="-Ofast -march=native -mtune=native"
-CXXOPTFLAGS="-Ofast -march=native -mtune=native"
+FOPTFLAGS="-O2 -march=native -mtune=native"
+COPTFLAGS="-O2 -march=native -mtune=native"
+CXXOPTFLAGS="-O2 -march=native -mtune=native"
 
 # Defining directories
 E4D_DIR=$(pwd)
