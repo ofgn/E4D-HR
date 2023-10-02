@@ -687,7 +687,7 @@ contains
         write (11, *) nzones, "   #Number of zones"
         if (nzones > 0) then
             do i = 1, nzones
-                write (11, "(I8, 3F10.2, I8, E10.2, A)") &
+                write (11, "(I8, 3F16.3, I8, E10.2, A)") &
                     zon_labs(i, 1), zone_xyz(i, :), zon_labs(i, 2), min_vols(i) ! Add format specifier to force single line output with the Intel Fortran Compiler. - OFGN 27/4/23
             end do
         end if
