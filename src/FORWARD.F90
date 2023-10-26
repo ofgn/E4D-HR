@@ -1,3 +1,7 @@
+! Changelog 
+! 1/10/23 - OFGN
+! Increase witdth in format descriptor.
+
 module forward
  
   use vars
@@ -72,7 +76,7 @@ implicit none
     !call KSPSetType(KS,KSPGMRES,perr) !use default
     !call KSPGMRESSetRestart(KS,1000,perr);
     !call KSPGetTolerances(KS,rtol,atol,dtol,maxints,perr)
-    call KSPSetTolerances(KS,rtol,atol,dtol,maxints,perr)
+    call KSPSetTolerances(KS,rtol,atol,dtol,2,perr)
     !call KSPSetTolerances(KS,PETS_DEFAULT,PETS_DEFAULT,PETS_DEFAULT,PETS_DEFAULT,perr)
     call KSPSetFromOptions(KS,perr)
    
@@ -463,7 +467,7 @@ implicit none
        return
        
        
-1001   format(" NOTICE: ELECTRODE ",I5," IS ",E10.4," DISTANCE UNITS FROM THE NEAREST NODE")   
+1001   format(" NOTICE: ELECTRODE ",I5," IS ",E12.5," DISTANCE UNITS FROM THE NEAREST NODE")  ! Increase witdth in format descriptor. - OFGN 1/10/23
   end subroutine mget_electrode_nodes
   !____________________________________________________________________
 
