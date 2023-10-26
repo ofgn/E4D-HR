@@ -1,3 +1,7 @@
+! Changelog 
+! 1/10/23 - OFGN
+! Increase witdth in format descriptor.
+
 module obj
 
   use input
@@ -669,7 +673,7 @@ module obj
 
     !!Check to see if we need to change beta yet
     open(67,file=trim(fnam),status='old',position='append')
-    write(67,"(A,g10.4)") "Decrease in objective function is: ",( (PHI_T - phi_tot)/PHI_T)
+    write(67,"(A,G12.5)") "Decrease in objective function is: ",( (PHI_T - phi_tot)/PHI_T) ! Increase witdth in format descriptor. - OFGN 1/10/23
     close(67)
     if(abs( (PHI_T - phi_tot)/PHI_T) <= del_obj) then
        lambda = 1-(phi_data - norm_chi2*nm)/(norm_chi2*nm)
@@ -682,15 +686,15 @@ module obj
           return
        end if
        open(67,file=trim(fnam),status='old',position='append')
-       write(67,"(A,g10.4)") "Solution did not converge at beta = ",beta
-       write(67,"(A,g10.4,A,g10.4,A,g10.4)") "Decreasing beta by ",lambda," from ",beta," to ",lambda*beta
+       write(67,"(A,G12.5)") "Solution did not converge at beta = ",beta ! Increase witdth in format descriptor. - OFGN 1/10/23
+       write(67,"(A,G12.5,A,G12.5,A,G12.5)") "Decreasing beta by ",lambda," from ",beta," to ",lambda*beta ! Increase witdth in format descriptor. - OFGN 1/10/23
        close(67)
        beta=lambda*beta
        phi_model = lambda*phi_model
     else 
        !write(*,*) "Decrease in objective function is sufficient to continue at beta = ",beta
        open(67,file=trim(fnam),status='old',position='append')
-       write(67,"(A,g10.4)") "Decrease in objective function is sufficient to continue at beta = ",beta
+       write(67,"(A,G12.5)") "Decrease in objective function is sufficient to continue at beta = ",beta ! Increase witdth in format descriptor. - OFGN 1/10/23
        close(67)
     end if
     

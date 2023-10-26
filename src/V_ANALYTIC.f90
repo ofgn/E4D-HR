@@ -3,6 +3,8 @@
 ! Use phase rather than phase/resistance
 ! Max phase set to the current measurement rather than the running total
 ! Min phase set to the current measurement rather than the running total
+! 1/10/23 - OFGN
+! Increase witdth in format descriptor.
 
 module v_analytic
 
@@ -128,8 +130,12 @@ contains
          do i=1,nm
             phzi= -dobsi(i) ! Use phase rather than phase/resistance - OFGN 7/4/23
             if(phzi>0) then 
-               if(phzi>mxphz) mxphz=phz ! Max phase set to the current measurement rather than the running total - OFGN 7/4/23
-               if(phzi<mnphz) mnphz=phz ! Min phase set to the current measurement rather than the running total - OFGN 7/4/23
+               if(phzi>mxphz) then
+                  mxphz=phzi ! Max phase set to the current measurement rather than the running total - OFGN 7/4/23
+               end if
+               if(phzi<mnphz) then
+                  mnphz=phzi ! Min phase set to the current measurement rather than the running total - OFGN 7/4/23
+               end if
                phz=phz+phzi
                cc=cc+1
             end if
@@ -142,16 +148,16 @@ contains
       call write_sigma
 
       open(51,file='e4d.log',status='old',action='write',position='append'); 
-      write(51,"(A36,g10.5)") "  Minimum apparent conductivity :   ",mnsig
-      write(51,"(A36,g10.5)") "  Maximum apparent conductivity :   ",mxsig
-      write(51,"(A36,g10.5)") "  Using conductivity            :   ",mean_sig
+      write(51,"(A36, G12.5)") "  Minimum apparent conductivity :   ",mnsig   ! Increase witdth in format descriptor. - OFGN 1/10/23
+      write(51,"(A36, G12.5)") "  Maximum apparent conductivity :   ",mxsig   ! Increase witdth in format descriptor. - OFGN 1/10/23
+      write(51,"(A36, G12.5)") "  Using conductivity            :   ",mean_sig   ! Increase witdth in format descriptor. - OFGN 1/10/23
       close(51)
       
       if(i_flag) then
          open(51,file='e4d.log',status='old',action='write',position='append'); 
-         write(51,"(A36,g10.5)") "  Minimum apparent phase        :   ",mnphz
-         write(51,"(A36,g10.5)") "  Maximum apparent phase        :   ",mxphz
-         write(51,"(A36,g10.5)") "  Using phase                   :   ",mean_phase
+         write(51,"(A36, G12.5)") "  Minimum apparent phase        :   ",mnphz   ! Increase witdth in format descriptor. - OFGN 1/10/23
+         write(51,"(A36, G12.5)") "  Maximum apparent phase        :   ",mxphz   ! Increase witdth in format descriptor. - OFGN 1/10/23
+         write(51,"(A36, G12.5)") "  Using phase                   :   ",mean_phase ! Increase witdth in format descriptor. - OFGN 1/10/23
          close(51)
       end if
    
@@ -346,9 +352,9 @@ contains
       open(51,file='e4d.log',status='old',action='write',position='append');
       write(51,"(A,I10.10)") "  Number of nodes:                  ",nnodes
       write(51,*) 
-      write(51,*) " Maximum surface node elevation:   ",mx+zorig
-      write(51,*) " Minimum surface node elevation:   ",mn+zorig
-      write(51,*) " Using surface elevation of    :   ",se+zorig
+      write(51,"(A36, G12.5)") " Maximum surface node elevation:   ",mx+zorig ! Increase witdth in format descriptor. - OFGN 1/10/23
+      write(51,"(A36, G12.5)") " Minimum surface node elevation:   ",mn+zorig ! Increase witdth in format descriptor. - OFGN 1/10/23
+      write(51,"(A36, G12.5)") " Using surface elevation of    :   ",se+zorig ! Increase witdth in format descriptor. - OFGN 1/10/23
       if(mx .ne. se .or. mn .ne. se) then
          write(51,*) "  !!! WARNING: It appears there may be some surface variability."
          write(51,*) "  !!! The analytic solution requires a flat surface."

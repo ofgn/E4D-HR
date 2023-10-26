@@ -1,3 +1,9 @@
+! Changelog 
+! 1/10/23 - OFGN
+! Increase witdth in format descriptor.
+! 26/10/23 - OFGN 
+! Commenting out this call since this subroutine seems to lose track of the line containing the number of measurements. 
+
 module input
   !_________________________________________________________________
   !! Author: Tim Johnson
@@ -1009,8 +1015,7 @@ contains
     end do
 
     read(11,*,IOSTAT=ios) nmt
- 
-  
+
     if(ios .ne. 0) goto 99
     if(nmt .ne. nm) goto 102
     do i=1,nm
@@ -2385,13 +2390,13 @@ contains
                    call crash_exit
                 end if
                 if(Fw_parm(indx,2)<0.0) then
-                   write(51,"(A30,8x,2g10.4)") "Reweighting Mean, St.Dev.: ",Fw_parm(indx,1),Fw_parm(indx,2)
+                   write(51,"(A30,8x,2G12.5)") "Reweighting Mean, St.Dev.: ",Fw_parm(indx,1),Fw_parm(indx,2) ! Increase witdth in format descriptor. - OFGN 1/10/23
                    write(51,*) " Reweighting function deviation must be greater than zero"
                    write(51,*) " Aborting ..."
                    close(51) 
                    call crash_exit
                 end if
-                write(51,"(A30,8x,2g10.4)") "Reweighting Mean, St.Dev.: ",Fw_parm(indx,1),Fw_parm(indx,2)
+                write(51,"(A30,8x,2G12.5)") "Reweighting Mean, St.Dev.: ",Fw_parm(indx,1),Fw_parm(indx,2) ! Increase witdth in format descriptor. - OFGN 1/10/23
                 close(51)
              end if
 
@@ -2448,7 +2453,7 @@ contains
                    elseif(smetric(indx,3)==2) then
                       write(51,"(A30,A26)") "Reference Value: ","         Previous Solution."
                    else
-                      write(51,"(A30,g10.4)") "Reference Value: ",C_targ(indx)
+                      write(51,"(A30,G12.5)") "Reference Value: ",C_targ(indx) ! Increase witdth in format descriptor. - OFGN 1/10/23
                    end if
                 end if
              end if
@@ -2469,7 +2474,7 @@ contains
                 close(51)
                 call crash_exit
              else
-                write(51,"(A30,8x,g10.4)") "Relative Weight: ",zwts(indx,1)
+                write(51,"(A30,8x,G12.5)") "Relative Weight: ",zwts(indx,1) ! Increase witdth in format descriptor. - OFGN 1/10/23
                 if(zwts(indx,1)<0) then
                    write(51,*) " The relative weight for each block must be greater than or equal to zero"
                    write(51,*) " Aborting ..."
@@ -2591,9 +2596,9 @@ contains
                call crash_exit
             else
                write(51,*)
-               write(51,"(A30,8x,g10.4)") "Starting beta value: ",beta
-               write(51,"(A30,9x,g10.4)") "Minimum objective reduction: ",del_obj
-               write(51,"(A30,9x,g10.4)") "Beta reduction parameter: ",beta_red
+               write(51,"(A30,8x,G12.5)") "Starting beta value: ",beta ! Increase witdth in format descriptor. - OFGN 1/10/23
+               write(51,"(A30,9x,G12.5)") "Minimum objective reduction: ",del_obj ! Increase witdth in format descriptor. - OFGN 1/10/23
+               write(51,"(A30,9x,G12.5)") "Beta reduction parameter: ",beta_red ! Increase witdth in format descriptor. - OFGN 1/10/23
                
             end if
      
@@ -2661,7 +2666,7 @@ contains
 
             else
                !write(51,*) 
-               write(51,"(A30,8x,g10.4)") "Target chi-squared value: ",norm_chi2
+               write(51,"(A30,8x,G12.5)") "Target chi-squared value: ",norm_chi2 ! Increase witdth in format descriptor. - OFGN 1/10/23
             end if
             close(51)
          
@@ -2725,11 +2730,11 @@ contains
                else
                   !write(51,*) 
                   if(invi) then
-                     write(51,"(A30,9x,g10.4)") "Maximum phase: ",max_sig
-                     write(51,"(A30,9x,g10.4)") "Minimum phase: ",min_sig
+                     write(51,"(A30,9x,G12.5)") "Maximum phase: ",max_sig ! Increase witdth in format descriptor. - OFGN 1/10/23
+                     write(51,"(A30,9x,G12.5)") "Minimum phase: ",min_sig ! Increase witdth in format descriptor. - OFGN 1/10/23
                   else
-                     write(51,"(A30,9x,g10.4)") "Maximum conductivity: ",max_sig
-                     write(51,"(A30,9x,g10.4)") "Minimum conductivity: ",min_sig
+                     write(51,"(A30,9x,G12.5)") "Maximum conductivity: ",max_sig ! Increase witdth in format descriptor. - OFGN 1/10/23
+                     write(51,"(A30,9x,G12.5)") "Minimum conductivity: ",min_sig ! Increase witdth in format descriptor. - OFGN 1/10/23
                   end if
                end if
 
@@ -2907,7 +2912,7 @@ contains
                   if(cull_flag==0) then
                      write(51,"(A30)") "No data culling"
                   elseif(cull_flag==1) then
-                     write(51,"(A30,8x,g10.4)") "Data culling st. deviation: ",cull_dev
+                     write(51,"(A30,8x,G12.5)") "Data culling st. deviation: ",cull_dev ! Increase witdth in format descriptor. - OFGN 1/10/23
                   end if
                   close(51)
                end if
@@ -3086,10 +3091,11 @@ contains
     end do
     
     
-    call check_keywords(10)
+    ! call check_keywords(10) ! Commenting out this call since this subroutine seems to lose track of the line containing the number of measurements. - OFGN 1/10/23
+    ! Read in the survey
+    read(10, fmt=*, IOSTAT=ios) nm   
+    call check_inp(17,nm)
 
-    !!Read in the survey
-    read(10,*,IOSTAT=ios) nm;     call check_inp(17,nm)
     allocate(dobs(nm),s_conf(nm,4),Wd(nm))
     if(i_flag) then 
 

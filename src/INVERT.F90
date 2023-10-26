@@ -1,3 +1,7 @@
+! Changelog 
+! 1/10/23 - OFGN
+! Increase witdth in format descriptor.
+
 module invert
 
   use vars
@@ -67,14 +71,14 @@ contains
 
     if(wopt) then
        call cpu_time(ce)
-       write(*,"(A,g10.4,A)") "  SENDING DATA NOISE TO SLAVES AT: ",ce-cs," seconds"
+       write(*,"(A,G12.5,A)") "  SENDING DATA NOISE TO SLAVES AT: ",ce-cs," seconds" ! Increase witdth in format descriptor. - OFGN 1/10/23
        call send_data_noise
     end if
   
 
     !!Build the model part of b
     call cpu_time(ce)
-    write(*,"(A,g10.4,A)") "  CONSTRUCTING CONSTRAINT RESIDUALS AT: ",ce-cs," seconds"
+    write(*,"(A,G12.5,A)") "  CONSTRUCTING CONSTRAINT RESIDUALS AT: ",ce-cs," seconds" ! Increase witdth in format descriptor. - OFGN 1/10/23
     do i=1,ccount
        
        if(invi .and. Wm(i) .eq. 0) then 
@@ -358,7 +362,7 @@ contains
     unstable = 0
     resNE = 0
     call cpu_time(ce)
-    write(*,"(A,g10.4,A)") "  STARTING INNER ITERATIONS AT: ",ce-cs," seconds"
+    write(*,"(A,G12.5,A)") "  STARTING INNER ITERATIONS AT: ",ce-cs," seconds" ! Increase witdth in format descriptor. - OFGN 1/10/23
     do i=1,max_initer
 
        if( info .ne. 0) then

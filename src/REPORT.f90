@@ -1,3 +1,7 @@
+! Changelog 
+! 1/10/23 - OFGN
+! Increase witdth in format descriptor.
+
 module report
 
   use obj
@@ -122,16 +126,16 @@ module report
          end do
          write(67,*)
          !end if
-         write(67,"(A,g10.4,A,g10.5)") " Chi2 is currently ",chi2,"   Target value is ",norm_chi2    
-         write(67,"(A,g10.4)") " Mean error is ",errm
-         write(67,"(A,g10.4)") " RMS error is ",sqrt(chi2) !erms
-         write(67,"(A,I7.7)") " Number of data culled is ",ncull
+         write(67,"(A,G12.5,A,G12.5)") " Chi2 is currently ",chi2,"   Target value is ",norm_chi2     ! Increase witdth in format descriptor. - OFGN 1/10/23
+         write(67,"(A,G12.5)") " Mean error is ",errm ! Increase witdth in format descriptor. - OFGN 1/10/23
+         write(67,"(A,G12.5)") " RMS error is ",sqrt(chi2) !erms ! Increase witdth in format descriptor. - OFGN 1/10/23
+         write(67,"(A,I7.7)") " Number of data culled is ",ncull 
          if(cull_flag==1) then
             write(67,*) "Prior to data culling ..."
             !write(67,"(A,g15.5)") "   Phi_dat is ",phi_data0
-            write(67,"(A,g10.4)") "    Chi2 is ", chi20
-            write(67,"(A,g10.4)") "    Mean error is ",errm0
-            write(67,"(A,g10.4)") "    RMS error is ",sqrt(chi20) !erms0
+            write(67,"(A,G12.5)") "    Chi2 is ", chi20 ! Increase witdth in format descriptor. - OFGN 1/10/23
+            write(67,"(A,G12.5)") "    Mean error is ",errm0 ! Increase witdth in format descriptor. - OFGN 1/10/23
+            write(67,"(A,G12.5)") "    RMS error is ",sqrt(chi20) !erms0 ! Increase witdth in format descriptor. - OFGN 1/10/23
          end if
          
          write(67,*)"***********************************************************************"
