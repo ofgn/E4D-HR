@@ -76,7 +76,7 @@ implicit none
     !call KSPSetType(KS,KSPGMRES,perr) !use default
     !call KSPGMRESSetRestart(KS,1000,perr);
     !call KSPGetTolerances(KS,rtol,atol,dtol,maxints,perr)
-    call KSPSetTolerances(KS,rtol,atol,dtol,2,perr)
+    call KSPSetTolerances(KS,rtol,atol,dtol,maxints,perr)
     !call KSPSetTolerances(KS,PETS_DEFAULT,PETS_DEFAULT,PETS_DEFAULT,PETS_DEFAULT,perr)
     call KSPSetFromOptions(KS,perr)
    
