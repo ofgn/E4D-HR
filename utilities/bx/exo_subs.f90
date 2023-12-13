@@ -390,8 +390,8 @@ module exo_subs
          end if
          
          !!record the variable name
-         names(1) = trim("real_conductivity")
-         names(2) = trim("complex_conductivity")
+         names(1) = trim("Resistivity [Ohm-m]")
+         names(2) = trim("Phase [mrad]")
          call expvan(idexo,"e",2,names(1:2),ierr)
 
          names(1) = trim("real_potential")
@@ -469,8 +469,8 @@ module exo_subs
          
          !record the variable name
 
-       names(1) = trim("real_conductivity")
-         names(2) = trim("complex_conductivity")
+       names(1) = trim("Resistivity [Ohm-m]")
+         names(2) = trim("Phase [mrad]")
          call expvan(idexo,"e",2,names(1:2),ierr)
   
          names(1) = trim("real_potential")
@@ -517,7 +517,7 @@ module exo_subs
          do k=1,nele
             if(ele(k,5)==j) then
                nej=nej+1
-               zsig(nej)=sig(k,1)
+               zsig(nej)=1/sig(k,1)
             end if
          end do
          call expev(idexo,fn,i,j,nej,zsig(1:nej),ierr)
@@ -539,7 +539,7 @@ module exo_subs
             do k=1,nele
                if(ele(k,5)==j) then
                   nej=nej+1
-                  zsig(nej)=sig(k,2)
+                  zsig(nej)=atan(sig(k,2),sig(k,1)) * 1.0d3
                end if
             end do
             call expev(idexo,fn,i,j,nej,zsig(1:nej),ierr)
