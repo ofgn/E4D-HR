@@ -23,7 +23,7 @@ CXXOPTFLAGS="-O2 -march=native -mtune=native"
 E4D_DIR=$(pwd)
 BX_DIR="${E4D_DIR}/utilities/bx"
 VENDOR_DIR="${E4D_DIR}/vendor"
-NETCDF_DIR="${VENDOR_DIR}/netcdf-c-4.9.0"
+NETCDF_DIR="${VENDOR_DIR}/netcdf-c-4.9.2"
 EXO_DIR="${VENDOR_DIR}/exodus-5.09/exodus"
 
 
@@ -36,7 +36,7 @@ cd "$VENDOR_DIR" || exit 1
 sudo rm -rf "${EXO_DIR}" "${NETCDF_DIR}"
 
 # Unzip vendor packages
-tar -xzf netcdf-c-4.9.0.tar.gz
+tar -xzf netcdf-c-4.9.2.tar.gz
 tar -xzf exodus-5.09.tar.gz
 
 # Configure netcdf-c
