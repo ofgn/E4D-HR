@@ -151,7 +151,7 @@ contains
       integer :: i
       character(20) :: fname = ""
 
-      write (fname, "(A,I0)") "sigma.", iter
+      write (fname, "(A,I0)") "sigma_", iter
       open (12, file=fname, status='replace', action='write')
 
       if (allocated(element_map)) then
@@ -203,7 +203,7 @@ contains
       integer :: i
       character(20) :: fname = ""
 
-      write (fname, "(A,I0)") "sigmai.", iter
+      write (fname, "(A,I0)") "sigmai_", iter
       open (12, file=fname, status='replace', action='write')
 
       if (allocated(element_map)) then
