@@ -1,8 +1,8 @@
 ! Changelog
 ! 7/3/24 - OFGN
-! Added a new output mode to see the observed vs expected data for each iteration.
+! The observed vs expected data is now recorded for each iteration in the output file.
+! Adjusted the naming convention for the residual and conductivity files.
 module output
-
    use vars
    use report
    use reorder_mesh
@@ -32,9 +32,15 @@ contains
       close (15)
 
       if (dp_flag == 1) then
-         ! Added a new output mode to see the observed vs expected data for each iteration. - 7/3/24 - OFGN
+         ! The observed vs expected data is now recorded for each iteration in the output file. - OFGN 7/3/24 
          write (iter_str, '(I10)') iter
-         open (unit=15, file=trim(dp_file)//trim("_")//trim(adjustl(iter_str))//trim(".dat"), status='replace', action='write')
+         if (invi .and. (mode == 3)) then
+            open (unit=15, file=trim(dp_file)//trim("_c_")//trim(adjustl(iter_str))//trim(".dat"), status='replace', action='write')
+         else if (mode == 3) then
+            open (unit=15, file=trim(dp_file)//trim("_r_")//trim(adjustl(iter_str))//trim(".dat"), status='replace', action='write')
+         else
+            open (unit=15, file=trim(dp_file)//trim(".dat"), status='replace', action='write')
+         end if
          write (15, *) nm
          if (i_flag) then
             do i = 1, nm
@@ -151,7 +157,7 @@ contains
       integer :: i
       character(20) :: fname = ""
 
-      write (fname, "(A,I0)") "sigma_", iter
+      write (fname, "(A,I0)") "sigma_r_", iter ! Adjusted the naming convention for the residual and conductivity files. - 7/3/24   OFGN
       open (12, file=fname, status='replace', action='write')
 
       if (allocated(element_map)) then
@@ -203,7 +209,7 @@ contains
       integer :: i
       character(20) :: fname = ""
 
-      write (fname, "(A,I0)") "sigmai_", iter
+      write (fname, "(A,I0)") "sigma_c_", iter ! Adjusted the naming convention for the residual and conductivity files. - 7/3/24   OFGN
       open (12, file=fname, status='replace', action='write')
 
       if (allocated(element_map)) then
