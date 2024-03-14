@@ -157,7 +157,7 @@ contains
       integer :: i
       character(20) :: fname = ""
 
-      write (fname, "(A,I0)") "sigma_r_", iter ! Adjusted the naming convention for the residual and conductivity files. - 7/3/24   OFGN
+      write (fname, "(A,I0)") "sigma.", iter
       open (12, file=fname, status='replace', action='write')
 
       if (allocated(element_map)) then
@@ -209,7 +209,7 @@ contains
       integer :: i
       character(20) :: fname = ""
 
-      write (fname, "(A,I0)") "sigma_c_", iter ! Adjusted the naming convention for the residual and conductivity files. - 7/3/24   OFGN
+      write (fname, "(A,I0)") "sigmai.", iter
       open (12, file=fname, status='replace', action='write')
 
       if (allocated(element_map)) then
