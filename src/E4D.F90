@@ -58,7 +58,7 @@ program main
 
 
    
-  use vars                                
+  use vars                            
   use buildmesh
   use master
   use slave
