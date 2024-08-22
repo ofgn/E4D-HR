@@ -606,11 +606,11 @@ contains
       write (11, 118) nedge
       do i = 1, nedge - 1
          write (11, *) "1 0 2"
-         write (11, "(5I6)") 4, edge_seq(i), nsp2 + i, nsp2 + i + 1, edge_seq(i + 1)
+         write (11, "(5I10)") 4, edge_seq(i), nsp2 + i, nsp2 + i + 1, edge_seq(i + 1)
       end do
 
       write (11, *) "1 0 2"
-      write (11, "(5I6)") 4, edge_seq(nedge), nsp2 + nedge, nsp2 + 1, edge_seq(1)
+      write (11, "(5I10)") 4, edge_seq(nedge), nsp2 + nedge, nsp2 + 1, edge_seq(1)
 
     !!Define the lower boundary
       write (11, *)
