@@ -19,7 +19,7 @@ implicit none
   
   
   !FILES
-  character*40 :: mshfile_fmm                                 !!file containing the mesh options
+  character*40 :: cfg_file_fmm                                 !!file containing the mesh options
   character*40 :: tfile                                       !!survey configuration file
   character*40 :: spdfile                                     !!slowness file
   character*40 :: outfile_fmm                                 !!output options file

@@ -21,7 +21,7 @@ implicit none
 
 
   !FILES
-  character*40 :: mshfile                                  !!file containing the mesh options
+  character*40 :: cfg_file                                  !!file containing the mesh options
   character*40 :: efile                                    !!survey configuration file
   character*40 :: sigfile                                  !!bulk conductivity file
   character*40 :: outfile                                  !!output options file

@@ -1548,18 +1548,18 @@ contains
       if(allocated(nodes)) return
 
       !get the meshfile prefix
-      nchr=len_trim(mshfile)
+      nchr=len_trim(cfg_file)
       do i=1,nchr
-         if(mshfile(i:i)=='.') then
+         if(cfg_file(i:i)=='.') then
             npre=i+1;
             exit
          end if
       end do
 
-      inquire(file=mshfile(1:npre)//".node",exist=exst)
+      inquire(file=cfg_file(1:npre)//".node",exist=exst)
       if(.not.exst) goto 10
 
-      open(10,file=mshfile(1:npre)//".node",status="old",action="read")
+      open(10,file=cfg_file(1:npre)//".node",status="old",action="read")
       read(10,*,IOSTAT=ist) nnodes,dim,jnk,bflag
       if(ist .ne. 0) goto 11
 
@@ -1600,11 +1600,11 @@ contains
 10    continue
       open(51,file='e4d.log',status='old',action='write',position='append')
       write(51,*)
-      write(51,*) ' Cannot find the node file : ',mshfile(1:npre)//'.node'
+      write(51,*) ' Cannot find the node file : ',cfg_file(1:npre)//'.node'
       write(51,*) ' Aborting ...'
       close(51)
       write(*,*)
-      write(*,*) ' Cannot find the node file : ',mshfile(1:npre)//'.node'
+      write(*,*) ' Cannot find the node file : ',cfg_file(1:npre)//'.node'
       write(*,*) ' Aborting ...'
       st=.false.
       return
@@ -1614,12 +1614,12 @@ contains
       open(51,file='e4d.log',status='old',action='write',position='append')
       write(51,*)
       write(51,*) ' There was a problem reading the first line'
-      write(51,*) ' of the node file: ',mshfile(1:npre)//'.node'
+      write(51,*) ' of the node file: ',cfg_file(1:npre)//'.node'
       write(51,*) ' Aborting ...'
       close(51)
       write(*,*)
       write(*,*) ' There was a problem reading the first line'
-      write(*,*) ' of the node file: ',mshfile(1:npre)//'.node'
+      write(*,*) ' of the node file: ',cfg_file(1:npre)//'.node'
       st=.false.
       return
 
@@ -1628,11 +1628,11 @@ contains
       open(51,file='e4d.log',status='old',action='write',position='append')
       write(51,*)
       write(51,*) ' There was a problem reading line: ',i
-      write(51,*) ' of the node file: ',mshfile(1:npre)//'.node'
+      write(51,*) ' of the node file: ',cfg_file(1:npre)//'.node'
       close(51)
       write(*,*)
       write(*,*) ' There was a problem reading line :',i
-      write(*,*) ' of the node file: ',mshfile(1:npre)//'.node'
+      write(*,*) ' of the node file: ',cfg_file(1:npre)//'.node'
       st=.false.
       return
 
@@ -1669,18 +1669,18 @@ contains
 
       st = .true.
       !get the meshfile prefix
-      nchr=len_trim(mshfile)
+      nchr=len_trim(cfg_file)
       do i=1,nchr
-         if(mshfile(i:i)=='.') then
+         if(cfg_file(i:i)=='.') then
             npre=i+1;
             exit
          end if
       end do
 
-      inquire(file=mshfile(1:npre)//".ele",exist=exst)
+      inquire(file=cfg_file(1:npre)//".ele",exist=exst)
       if(.not.exst) goto 10
 
-      open(10,file=mshfile(1:npre)//".ele",status="old",action="read")
+      open(10,file=cfg_file(1:npre)//".ele",status="old",action="read")
       read(10,*,IOSTAT=ist) nelem,dim,jnk
       if(ist .ne. 0) goto 11
 
@@ -1714,10 +1714,10 @@ contains
 10    continue
       open(51,file='e4d.log',status='old',action='write')
       write(51,*)
-      write(51,*) ' Cannot find the element file : ',mshfile(1:npre)//'.ele'
+      write(51,*) ' Cannot find the element file : ',cfg_file(1:npre)//'.ele'
       close(51)
       write(*,*)
-      write(*,*) ' Cannot find the ele file : ',mshfile(1:npre)//'.ele'
+      write(*,*) ' Cannot find the ele file : ',cfg_file(1:npre)//'.ele'
       st=.false.
       return
 
@@ -1726,11 +1726,11 @@ contains
       open(51,file='e4d.log',status='old',action='write')
       write(51,*)
       write(51,*) ' There was a problem reading the first line'
-      write(51,*) ' of the element file: ',mshfile(1:npre)//'.ele'
+      write(51,*) ' of the element file: ',cfg_file(1:npre)//'.ele'
       close(51)
       write(*,*)
       write(*,*) ' There was a problem reading the first line'
-      write(*,*) ' of the element file: ',mshfile(1:npre)//'.ele'
+      write(*,*) ' of the element file: ',cfg_file(1:npre)//'.ele'
       st=.false.
       return
 
@@ -1739,11 +1739,11 @@ contains
       open(51,file='e4d.log',status='old',action='write')
       write(51,*)
       write(51,*) ' There was a problem reading line: ',i
-      write(51,*) ' of the element file: ',mshfile(1:npre)//'.ele'
+      write(51,*) ' of the element file: ',cfg_file(1:npre)//'.ele'
       close(51)
       write(*,*)
       write(*,*) ' There was a problem reading line :',i
-      write(*,*) ' of the element file: ',mshfile(1:npre)//'.ele'
+      write(*,*) ' of the element file: ',cfg_file(1:npre)//'.ele'
       st=.false.
       return
 
@@ -1759,18 +1759,18 @@ contains
 
       st = .true.
       !get the meshfile prefix
-      nchr=len_trim(mshfile)
+      nchr=len_trim(cfg_file)
       do i=1,nchr
-         if(mshfile(i:i)=='.') then
+         if(cfg_file(i:i)=='.') then
             npre=i+1;
             exit
          end if
       end do
 
-      inquire(file=mshfile(1:npre)//".face",exist=exst)
+      inquire(file=cfg_file(1:npre)//".face",exist=exst)
       if(.not.exst) goto 10
 
-      open(10,file=mshfile(1:npre)//".face",status="old",action="read")
+      open(10,file=cfg_file(1:npre)//".face",status="old",action="read")
 
       read(10,*,IOSTAT=ist) nfaces,jnk
       if(ist .ne. 0) goto 11
@@ -1786,11 +1786,11 @@ contains
 10    continue
       open(51,file='e4d.log',status='old',action='write')
       write(51,*)
-      write(51,*) ' Cannot find the face file : ',mshfile(1:npre)//'.face'
+      write(51,*) ' Cannot find the face file : ',cfg_file(1:npre)//'.face'
       write(51,*) " Aborting ..."
       close(51)
       write(*,*)
-      write(*,*) ' Cannot find the face file : ',mshfile(1:npre)//'.face'
+      write(*,*) ' Cannot find the face file : ',cfg_file(1:npre)//'.face'
       write(*,*) " Aborting ..."
       st=.false.
       return
@@ -1800,12 +1800,12 @@ contains
       open(51,file='e4d.log',status='old',action='write')
       write(51,*)
       write(51,*) ' There was a problem reading the first line'
-      write(51,*) ' of the face file: ',mshfile(1:npre)//'.face'
+      write(51,*) ' of the face file: ',cfg_file(1:npre)//'.face'
       write(*,*) " Aborting ..."
       close(51)
       write(*,*)
       write(*,*) ' There was a problem reading the first line'
-      write(*,*) ' of the face file: ',mshfile(1:npre)//'.face'
+      write(*,*) ' of the face file: ',cfg_file(1:npre)//'.face'
       write(*,*) " Aborting"
       st=.false.
       return
@@ -1815,11 +1815,11 @@ contains
       open(51,file='e4d.log',status='old',action='write')
       write(51,*)
       write(51,*) ' There was a problem reading line: ',i
-      write(51,*) ' of the face file: ',mshfile(1:npre)//'.face'
+      write(51,*) ' of the face file: ',cfg_file(1:npre)//'.face'
       close(51)
       write(*,*)
       write(*,*) ' There was a problem reading line :',i
-      write(*,*) ' of the face file: ',mshfile(1:npre)//'.face'
+      write(*,*) ' of the face file: ',cfg_file(1:npre)//'.face'
       st=.false.
       return
 

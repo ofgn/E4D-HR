@@ -6,9 +6,9 @@ libs =
 PETSC_DIR = 
 PETSC_INCLUDES = ${PETSC_FC_INCLUDES}
 
-objects = FMM_VARS.o VARS.o DISTRIBUTOR.o READ_INP.o READ_INP_FMM.o REORDER_MESH.o\
+objects = vtk.o FMM_VARS.o VARS.o DISTRIBUTOR.o READ_INP.o READ_INP_FMM.o REORDER_MESH.o\
 	FORWARD_FMM.o ASSEMBLE_FMM.o BUILD_AMAP.o JACOBIAN_FMM.o   \
-	JACOBIAN.o mat_inv.o FORWARD.o ASSEMBLE.o BuildMesh.o \
+	JACOBIAN.o mat_inv.o FORWARD.o ASSEMBLE.o mesh_generation.o \
 	DD_OPT_SLAVE.o SLAVE.o SLAVE_FMM.o\
 	BUILD_MODEL_CONSTRAINTS.o OBJ.o\
 	REPORT.o REPORT_FMM.o Output.o Output_FMM.o MASTER.o MASTER_FMM.o  \
@@ -72,8 +72,8 @@ INVERT.o : INVERT.F90
 JOINT_INVERT.o : JOINT_INVERT.F90
 	 $(FC) $(FFLAGS) -c JOINT_INVERT.F90 -o JOINT_INVERT.o ${PETSC_INCLUDES}
 
-BuildMesh.o : BuildMesh.f90
-	$(FC) $(FFLAGS) -c BuildMesh.f90 -o BuildMesh.o ${PETSC_INCLUDES}
+mesh_generation.o : mesh_generation.f90
+	$(FC) $(FFLAGS) -c mesh_generation.f90 -o mesh_generation.o ${PETSC_INCLUDES}
 
 V_ANALYTIC.o : V_ANALYTIC.f90
 	$(FC) $(FFLAGS) -c V_ANALYTIC.f90 -o V_ANALYTIC.o ${PETSC_INCLUDES}
@@ -122,6 +122,9 @@ MULTI_FORWARD.o : Multi_Forward.F90
 
 REORDER_MESH.o : REORDER_MESH.f90
 	$(FC) $(FFLAGS) -c REORDER_MESH.f90 -o REORDER_MESH.o ${PETSC_INCLUDES}
+
+vtk.o : vtk.f90
+	$(FC) $(FFLAGS) -c vtk.f90 -o vtk.o ${PETSC_INCLUDES}
 
 .PHONY: clean
 clean :

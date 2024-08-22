@@ -207,7 +207,7 @@ contains
             return
         end if
 
-        read (10, *, IOSTAT=ios) mshfile; call check_inp(2, junk)
+        read (10, *, IOSTAT=ios) cfg_file; call check_inp(2, junk)
 
         if (mode > 1 .and. mode .ne. 21 .and. mode .ne. 31 .and. mode .ne. 41) then
             read (10, *, IOSTAT=ios) efile; call check_inp(3, junk)
@@ -325,20 +325,20 @@ contains
     !!Determine if the mesh file is a .cfg file or if meshfiles are provided
         mnchar = 0
         do i = 1, 40
-            if (mshfile(i:i) == '.') then
+            if (cfg_file(i:i) == '.') then
                 mnchar = i
                 exit
             end if
         end do
         if (mnchar == 0) call check_inp(21, 0)
 
-    !!Check for compatibility between mshfile and mode
+    !!Check for compatibility between cfg_file and mode
     !!Check for config file
         if (mode == 1) then
-            if (mshfile(mnchar + 1:mnchar + 3) == "cfg") then
-                inquire (file=trim(mshfile), exist=exst)
+            if (cfg_file(mnchar + 1:mnchar + 3) == "cfg") then
+                inquire (file=trim(cfg_file), exist=exst)
                 if (.not. exst) call check_inp(21, 1)
-            else if (mshfile(mnchar + 1:mnchar + 3) .ne. "cfg") then
+            else if (cfg_file(mnchar + 1:mnchar + 3) .ne. "cfg") then
                 call check_inp(21, 0)
             end if
         end if
@@ -1354,9 +1354,9 @@ contains
 
             else
                 if (mode == 1 .or. mode == 21 .or. mode == 31) then
-                    write (51, *) " Mesh configuration file:          ", trim(mshfile)
+                    write (51, *) " Mesh configuration file:          ", trim(cfg_file)
                 else
-                    write (51, *) " Mesh file:                        ", trim(mshfile)
+                    write (51, *) " Mesh file:                        ", trim(cfg_file)
                 end if
             end if
             close (51)
@@ -1619,14 +1619,14 @@ contains
             call crash_exit
 
         case (15)
-            inquire (file=mshfile(1:mnchar)//'trn', exist=exst)
+            inquire (file=cfg_file(1:mnchar)//'trn', exist=exst)
             if (.not. exst) then
                 open (51, file='e4d.log', status='old', action='write', position='append')
                 write (51, *)
-                write (51, *) " Cannot find the mesh translation file: ", trim(mshfile(1:mnchar))//'trn'
+                write (51, *) " Cannot find the mesh translation file: ", trim(cfg_file(1:mnchar))//'trn'
                 write (51, *) " Aborting..."
                 write (*, *)
-                write (*, *) " Cannot find the mesh translation file: ", trim(mshfile(1:mnchar))//'trn'
+                write (*, *) " Cannot find the mesh translation file: ", trim(cfg_file(1:mnchar))//'trn'
                 write (*, *) " Aborting..."
                 close (51)
                 call crash_exit
@@ -1637,12 +1637,12 @@ contains
                 open (51, file='e4d.log', status='old', action='write', position='append')
                 write (51, *)
                 write (51, *) " There was a problem reading the mesh "
-                write (51, *) " translation numbers in: ", trim(mshfile(1:mnchar))//'trn'
+                write (51, *) " translation numbers in: ", trim(cfg_file(1:mnchar))//'trn'
                 write (51, *) " Aborting ... "
                 close (51)
                 write (*, *)
                 write (*, *) " There was a problem reading the mesh "
-                write (*, *) " translation numbers in: ", trim(mshfile(1:mnchar))//'trn'
+                write (*, *) " translation numbers in: ", trim(cfg_file(1:mnchar))//'trn'
                 write (*, *) " Aborting ... "
                 close (51)
                 call crash_exit
@@ -1745,19 +1745,19 @@ contains
                 write (51, *)
                 write (51, *) " In mode 1 you must provide a mesh configuration (*.cfg) file "
                 write (51, *) " In all other modes you must provide a node or element file name"
-                write (51, *) " You provided: ", trim(mshfile)
+                write (51, *) " You provided: ", trim(cfg_file)
                 write (51, *) " Aborting ..."
                 write (*, *)
                 write (*, *) " In mode 1 you must provide a mesh configuration (*.cfg) file "
                 write (*, *) " In all other modes you must provide a node or element file name"
-                write (*, *) " You provided: ", trim(mshfile)
+                write (*, *) " You provided: ", trim(cfg_file)
                 write (*, *) " Aborting ..."
             else if (indx == 1) then
                 write (51, *)
-                write (51, *) " Cannot find the mesh configuration file: ", trim(mshfile)
+                write (51, *) " Cannot find the mesh configuration file: ", trim(cfg_file)
                 write (51, *) " Aborting ..."
                 write (*, *)
-                write (*, *) " Cannot find the mesh configuration file: ", trim(mshfile)
+                write (*, *) " Cannot find the mesh configuration file: ", trim(cfg_file)
                 write (*, *) " Aborting ..."
             end if
             close (51)
@@ -1956,23 +1956,23 @@ contains
 
         case (121)
             open (51, file='e4d.log', status='old', action='write', position='append')
-            if (mshfile(mnchar + 2:mnchar + 6) == ".node") then
-                inquire (file=trim(mshfile), exist=exst)
+            if (cfg_file(mnchar + 2:mnchar + 6) == ".node") then
+                inquire (file=trim(cfg_file), exist=exst)
                 if (.not. exst) then
                     write (51, *)
                     write (*, *)
-                    write (51, *) " Cannot find the specified mesh node file: ", trim(mshfile)
-                    write (*, *) " Cannot find the specified mesh node file: ", trim(mshfile)
+                    write (51, *) " Cannot find the specified mesh node file: ", trim(cfg_file)
+                    write (*, *) " Cannot find the specified mesh node file: ", trim(cfg_file)
                     close (51)
                     call crash_exit
                 end if
-            elseif (mshfile(mnchar + 2:mnchar + 5) == ".ele") then
-                inquire (file=trim(mshfile), exist=exst)
+            elseif (cfg_file(mnchar + 2:mnchar + 5) == ".ele") then
+                inquire (file=trim(cfg_file), exist=exst)
                 if (.not. exst) then
                     write (51, *)
                     write (*, *)
-                    write (51, *) " Cannot find the specified mesh element file: ", trim(mshfile)
-                    write (*, *) " Cannot find the specified mesh element file: ", trim(mshfile)
+                    write (51, *) " Cannot find the specified mesh element file: ", trim(cfg_file)
+                    write (*, *) " Cannot find the specified mesh element file: ", trim(cfg_file)
                     close (51)
                     call crash_exit
                 end if
@@ -1981,10 +1981,10 @@ contains
                 write (*, *)
                 write (51, *) " If mode > 1 you must provide the name of the mesh"
                 write (51, *) " node file (*.node) or mesh element file (*.ele) ."
-                write (51, *) " You provided: ", trim(mshfile)
+                write (51, *) " You provided: ", trim(cfg_file)
                 write (*, *) " If mode > 1 you must provide the name of the mesh"
                 write (*, *) " node file (*.node) or mesh element file (*.ele) ."
-                write (*, *) " You provided: ", trim(mshfile)
+                write (*, *) " You provided: ", trim(cfg_file)
                 close (51)
                 call crash_exit
             end if
@@ -3248,14 +3248,14 @@ contains
         integer :: i
         mnchar = 0
         do i = 1, 40
-            if (mshfile(i:i) == '.') then
+            if (cfg_file(i:i) == '.') then
                 mnchar = i
                 exit
             end if
         end do
 
         call check_inp(15, junk)
-        open (21, file=mshfile(1:mnchar)//'trn', status='old')
+        open (21, file=cfg_file(1:mnchar)//'trn', status='old')
         read (21, *, IOSTAT=ios) xorig, yorig, zorig; call check_inp(16, junk)
         close (21)
         e_pos(:, 1) = e_pos(:, 1) - xorig
@@ -3279,25 +3279,25 @@ contains
                 if (ios .ne. 0) then
                     call check_inp(25, junk)
                 else
-                    nchr = len_trim(mshfile)
+                    nchr = len_trim(cfg_file)
                     do i = 1, nchr
-                        if (mshfile(i:i) == '.') then
+                        if (cfg_file(i:i) == '.') then
                             npre = i + 1; 
                             exit
                         end if
                     end do
-                    inquire (file=mshfile(1:npre)//".ele", exist=exst)
+                    inquire (file=cfg_file(1:npre)//".ele", exist=exst)
                     if (.not. exst) then
                         open (51, file='e4d.log', status='old', action='write')
                         write (51, *)
-                        write (51, *) ' Cannot find the element file : ', mshfile(1:npre)//'.ele'
+                        write (51, *) ' Cannot find the element file : ', cfg_file(1:npre)//'.ele'
                         close (51)
                         write (*, *)
-                        write (*, *) ' Cannot find the ele file : ', mshfile(1:npre)//'.ele'
+                        write (*, *) ' Cannot find the ele file : ', cfg_file(1:npre)//'.ele'
                         close (51)
                         call crash_exit
                     else
-                        open (10, file=mshfile(1:npre)//".ele", status='old', action='read')
+                        open (10, file=cfg_file(1:npre)//".ele", status='old', action='read')
                         read (10, *) nsig
                         close (10)
                         allocate (sigma(nsig))
@@ -3398,22 +3398,22 @@ contains
         logical :: exst, st
 
         junk = 1
-        read (10, *, IOSTAT=ios) mshfile
+        read (10, *, IOSTAT=ios) cfg_file
 
      !!Determine if the mesh file is a .cfg file or if meshfiles are provided
         mnchar = 0
         do i = 1, 40
-            if (mshfile(i:i) == '.') then
+            if (cfg_file(i:i) == '.') then
                 mnchar = i
                 exit
             end if
         end do
 
-        if (mshfile(mnchar + 1:mnchar + 3) == "cfg") then
+        if (cfg_file(mnchar + 1:mnchar + 3) == "cfg") then
             cfg_flag = .true.
         end if
 
-        inquire (file=trim(mshfile), exist=exst)
+        inquire (file=trim(cfg_file), exist=exst)
         open (51, file='e4d.log', status='old', action='write', position='append')
         if (.not. exst) then
             if (cfg_flag) then
@@ -3423,9 +3423,9 @@ contains
             end if
         else
             if (cfg_flag) then
-                write (51, *) " Mesh configuration file:          ", trim(mshfile)
+                write (51, *) " Mesh configuration file:          ", trim(cfg_file)
             else
-                write (51, *) " Mesh file:                        ", trim(mshfile)
+                write (51, *) " Mesh file:                        ", trim(cfg_file)
             end if
         end if
         close (51)
