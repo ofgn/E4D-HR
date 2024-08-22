@@ -392,7 +392,7 @@ contains
            
       open(51,file='e4d.log',status='old',action='write')
       write(51,*) "RUNNING IN ANALYTIC FORWARD SOLUTION MODE"
-      write(51,*) "MESH FILE = ",mshfile
+      write(51,*) "MESH FILE = ",cfg_file
       write(51,*) "SURVEY FILE = ",efile
       write(51,*) "CONDUCTIVITY FILE = ",sigfile
       write(51,*) "OUTPUT OPTIONS FILE = ",outfile

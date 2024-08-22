@@ -59,7 +59,7 @@ program main
 
    
   use vars                            
-  use buildmesh
+  use mesh_generation
   use master
   use slave
   use input
@@ -156,7 +156,7 @@ program main
      ! in read_inp
      call check_files
      if (cfg_flag) then
-         ! in buildmesh
+         ! in mesh_generation
          call build_tetgen4(i_flag)    
      else
          ! in master

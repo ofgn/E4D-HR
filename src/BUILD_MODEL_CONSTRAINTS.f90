@@ -54,8 +54,8 @@ contains
        !if(sum(smetric(:,2))>nrz) then          
        allocate(neighbors(nelem,4))
        do i=1,80
-          if(mshfile(i:i)=='.') then
-             open(21,file=mshfile(1:i+1)//".neigh",status='old',action='read')
+          if(cfg_file(i:i)=='.') then
+             open(21,file=cfg_file(1:i+1)//".neigh",status='old',action='read')
                          
              if(allocated(element_map)) then
                 !if element_map is allocated then there are inactive elements 
@@ -1263,8 +1263,8 @@ contains
     if(sum(reg_opt)>0) then          
        allocate(neighbors(nelem,4))
        do i=1,80
-          if(mshfile(i:i)=='.') then
-             open(21,file=mshfile(1:i+1)//".neigh",status='old',action='read');
+          if(cfg_file(i:i)=='.') then
+             open(21,file=cfg_file(1:i+1)//".neigh",status='old',action='read');
              read(21,*) 
              do j=1,nelem
                 read(21,*) k,neighbors(j,1:4)

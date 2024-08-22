@@ -150,9 +150,9 @@ module report_fmm
 
       if(tag==57) then
          !get the meshfile prefix
-         nchr=len_trim(mshfile)
+         nchr=len_trim(cfg_file)
          do i=1,nchr
-            if(mshfile(i:i)=='.') then
+            if(cfg_file(i:i)=='.') then
                npre=i+1;
                exit
             end if
@@ -161,14 +161,14 @@ module report_fmm
          open(67,file='fmm.log',status='old',action='write',position='append') 
          write(67,*)
          write(67,*) " The number of slowness values is not equal to the number of mesh elements"
-         write(67,*) " Number of elements in ",trim(mshfile(1:npre))//".ele is: ",nelem
+         write(67,*) " Number of elements in ",trim(cfg_file(1:npre))//".ele is: ",nelem
          write(67,*) " Number of slowness values in ",trim(spdfile)," is: ",nspd
          write(67,*) " Aborting ..."
          close(67)
 
          write(*,*)
          write(*,*) " The number of slowness values is not equal to the number of mesh elements"
-         write(*,*) " Number of elements in ",trim(mshfile(1:npre))//".ele is: ",nelem
+         write(*,*) " Number of elements in ",trim(cfg_file(1:npre))//".ele is: ",nelem
          write(*,*) " Number of slowness values in ",trim(spdfile)," is: ",nspd
          write(*,*) " Aborting ..."
       
