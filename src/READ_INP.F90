@@ -61,7 +61,7 @@ module input
     integer, dimension(:), allocatable :: node_map           !!for mesh reording with inactive cells
     integer, dimension(:), allocatable :: element_map        !!for mesh reording with inactive cells
 
-    integer :: ios                                           !!io status
+    integer :: io_stat                                           !!io status
     logical :: gs_flag = .false.                             !!semivariogram constraints flag
     logical :: tl_ly = .false.                               !!flag to execute Labrecque-Yang time-lapse
     logical :: i_flag = .false.                              !!flag for complex conductivity inversion
@@ -88,6 +88,7 @@ contains
 
     !____________________________________________________________________________________________
     subroutine read_input
+        
         implicit none
 
         character*40 :: smode
@@ -99,7 +100,7 @@ contains
 
         call check_inp(0, junk)
         open (10, file='e4d.inp', status='old', action='read')
-        read (10, *, IOSTAT=ios) smode; call check_inp(101, junk)
+        read (10, *, IOSTAT=io_stat) smode; call check_inp(101, junk)
 
         ! check for alpha characters and make them all lower case
         smode = lcase(smode)
@@ -197,7 +198,7 @@ contains
             case ('iptank4')
                 mode = 44; call check_inp(1, junk)
             case DEFAULT
-                read (smode, *, IOSTAT=ios) mode; call check_inp(1, junk)
+                read (smode, *, IOSTAT=io_stat) mode; call check_inp(1, junk)
             end select
         end if
 
@@ -207,19 +208,33 @@ contains
             return
         end if
 
-        read (10, *, IOSTAT=ios) cfg_file; call check_inp(2, junk)
+        read (10, *, IOSTAT=io_stat) cfg_filename
+        mesh_prefix_length = 0
+        do i = 1, 255
+            if (cfg_filename(i:i) == '.') then
+                mesh_prefix_length = i - 1
+                exit
+            end if
+        end do
+        mesh_prefix = cfg_filename(1:mesh_prefix_length)
+
+        call check_inp(2, junk)
 
         if (mode > 1 .and. mode .ne. 21 .and. mode .ne. 31 .and. mode .ne. 41) then
-            read (10, *, IOSTAT=ios) efile; call check_inp(3, junk)
-            read (10, *, IOSTAT=ios) sigfile; call check_inp(4, junk)
+            read (10, *, IOSTAT=io_stat) efile; call check_inp(3, junk)
+            read (10, *, IOSTAT=io_stat) sig_filename; call check_inp(4, junk)
 
             ! check for alpha characters and make them all lower case
-            chk_sigfile = sigfile
+            chk_sigfile = sig_filename
             chk_sigfile = lcase(chk_sigfile)
             if (trim(chk_sigfile) == "average") then
-                ave_sig = .true.
+                use_mean = .true.
+            else if (trim(chk_sigfile) == "mean") then
+                use_mean = .true.
+            else if (trim(chk_sigfile) == "median") then
+                use_median = .true.
             end if
-            read (10, *) outfile; call check_inp(5, junk)
+            read (10, *) out_file; call check_inp(5, junk)
         end if
         if (analytic) return
 
@@ -234,13 +249,13 @@ contains
             .or. mode == 34 &
             .or. mode .ge. 100) then
 
-            read (10, *, IOSTAT=ios) invfile; call check_inp(6, junk)
-            read (10, *, IOSTAT=ios) refmod_file; call check_inp(7, junk)
+            read (10, *, IOSTAT=io_stat) invfile; call check_inp(6, junk)
+            read (10, *, IOSTAT=io_stat) refmod_file; call check_inp(7, junk)
 
         elseif (mode == 23 .or. mode == 43 .or. mode == 24 .or. mode == 44) then
 
-            read (10, *, IOSTAT=ios) invfile, iinvfile; call check_inp(6, junk)
-            read (10, *, IOSTAT=ios) refmod_file; call check_inp(7, junk)
+            read (10, *, IOSTAT=io_stat) invfile, iinvfile; call check_inp(6, junk)
+            read (10, *, IOSTAT=io_stat) refmod_file; call check_inp(7, junk)
 
         end if
 
@@ -299,7 +314,7 @@ contains
             mode = 3
             check = 0
 
-            read (10, *, IOSTAT=ios) tl_file, check; call check_inp(8, check)
+            read (10, *, IOSTAT=io_stat) tl_file, check; call check_inp(8, check)
             if (check == 2) r_last = .true.
 
             if (rt_flag) then
@@ -307,12 +322,12 @@ contains
                 allocate (tl_dfils(ntl), tlt(ntl))
             else
 
-                open (21, file=trim(tl_file), status='old', action='read', IOSTAT=ios)
-                read (21, *, IOSTAT=ios) ntl; call check_inp(9, junk)
+                open (21, file=trim(tl_file), status='old', action='read', IOSTAT=io_stat)
+                read (21, *, IOSTAT=io_stat) ntl; call check_inp(9, junk)
                 allocate (tl_dfils(ntl), tlt(ntl))
 
                 do i = 1, ntl
-                    read (21, *, IOSTAT=ios) tl_dfils(i), tlt(i); call check_inp(10, i)
+                    read (21, *, IOSTAT=io_stat) tl_dfils(i), tlt(i); call check_inp(10, i)
                     inquire (file=trim(tl_dfils(i)), exist=exst)
                     if (.not. exst) call check_inp(11, i)
                 end do
@@ -325,20 +340,20 @@ contains
     !!Determine if the mesh file is a .cfg file or if meshfiles are provided
         mnchar = 0
         do i = 1, 40
-            if (cfg_file(i:i) == '.') then
+            if (cfg_filename(i:i) == '.') then
                 mnchar = i
                 exit
             end if
         end do
         if (mnchar == 0) call check_inp(21, 0)
 
-    !!Check for compatibility between cfg_file and mode
+    !!Check for compatibility between cfg_filename and mode
     !!Check for config file
         if (mode == 1) then
-            if (cfg_file(mnchar + 1:mnchar + 3) == "cfg") then
-                inquire (file=trim(cfg_file), exist=exst)
+            if (cfg_filename(mnchar + 1:mnchar + 3) == "cfg") then
+                inquire (file=trim(cfg_filename), exist=exst)
                 if (.not. exst) call check_inp(21, 1)
-            else if (cfg_file(mnchar + 1:mnchar + 3) .ne. "cfg") then
+            else if (cfg_filename(mnchar + 1:mnchar + 3) .ne. "cfg") then
                 call check_inp(21, 0)
             end if
         end if
@@ -360,16 +375,16 @@ contains
     !!file was provided. If so, check the list file to make sure
     !!all of the files exist and set the multi_forward flag to
     !!true.
-        if (.not. ave_sig) then
+        if ((.not. use_mean) .and. (.not. use_median)) then
             if (mode == 2 .or. mode == 22 .or. mode == 32 .or. mode == 42 .or. mode == 52) then
                 multi_forward = .false.
-                call check_for_list
+                call check_for_list()
             end if
         end if
 
-    !!read the conductivity file
-        if (.not. ave_sig .and. .not. multi_forward) then
-            call read_conductivity
+        !!read the conductivity file
+        if (((.not. use_mean) .and. (.not. use_median)) .and. .not. multi_forward) then
+            call read_conductivity()
         end if
 
     end subroutine read_input
@@ -430,7 +445,7 @@ contains
         if (allocated(Wd_cull)) deallocate (Wd_cull)
 
         nrz = 0
-        read (10, *, IOSTAT=ios) nrz; call check_inv_opts(1, junk)
+        read (10, *, IOSTAT=io_stat) nrz; call check_inv_opts(1, junk)
 
         allocate (smetric(nrz, 3), Fw_type(nrz), Fw_parm(nrz, 2), C_targ(nrz), zwts(nrz, 4))
         allocate (itmp(nrz))
@@ -442,27 +457,27 @@ contains
 
             !check for an external constraint file or zone number to constrain for this block
             EXTRNL = .false.
-            read (10, *, IOSTAT=ios) str1; call check_inv_opts(2, i)
+            read (10, *, IOSTAT=io_stat) str1; call check_inv_opts(2, i)
             if (trim(str1) .ne. 'EXTERNAL' .and. trim(str1) .ne. 'External' .and. trim(str1) .ne. 'external') then
-                read (str1, *, IOSTAT=ios) izn
+                read (str1, *, IOSTAT=io_stat) izn
                 call check_inv_opts(2, i)
             else
                 EXTRNL = .true.
             end if
 
-            read (10, *, IOSTAT=ios) izn; call check_inv_opts(3, i)
-            read (10, *, IOSTAT=ios) izn; call check_inv_opts(4, i)
+            read (10, *, IOSTAT=io_stat) izn; call check_inv_opts(3, i)
+            read (10, *, IOSTAT=io_stat) izn; call check_inv_opts(4, i)
 
             if (EXTRNL) then
-                read (10, *, IOSTAT=ios) str1; call check_inv_opts(33, i)
+                read (10, *, IOSTAT=io_stat) str1; call check_inv_opts(33, i)
             else
-                read (10, *, IOSTAT=ios) itmp(i); call check_inv_opts(5, i)
+                read (10, *, IOSTAT=io_stat) itmp(i); call check_inv_opts(5, i)
                 if (itmp(i) > max_nlink) then
                     max_nlink = itmp(i); 
                 end if
             end if
-            read (10, *, IOSTAT=ios) str1; call check_inv_opts(6, i)
-            read (10, *, IOSTAT=ios) rdum; call check_inv_opts(7, i)
+            read (10, *, IOSTAT=io_stat) str1; call check_inv_opts(6, i)
+            read (10, *, IOSTAT=io_stat) rdum; call check_inv_opts(7, i)
         end do
 
         !reset the external file list
@@ -475,7 +490,7 @@ contains
         nzn = int(maxval(zones))
         zwts = 0
 
-        read (10, *, IOSTAT=ios) nrz; call check_inv_opts(8, junk)
+        read (10, *, IOSTAT=io_stat) nrz; call check_inv_opts(8, junk)
         smetric = 0
         C_targ = 0
 
@@ -484,9 +499,9 @@ contains
             call check_inv_opts(9, i)
 
             !check for external
-            read (10, *, IOSTAT=ios) str1; 
+            read (10, *, IOSTAT=io_stat) str1; 
             if (trim(str1) .ne. 'EXTRNL' .and. trim(str1) .ne. 'External' .and. trim(str1) .ne. 'external') then
-                read (str1, *, IOSTAT=ios) smetric(i, 1)
+                read (str1, *, IOSTAT=io_stat) smetric(i, 1)
                 call check_inv_opts(10, i)
             else
           !!smetric(i,1) is the zone this regularization block operates one
@@ -499,19 +514,11 @@ contains
 
             read (10, *) smetric(i, 2), zwts(i, 2:4); call check_inv_opts(11, i)
 
-            if (smetric(i, 2) .eq. 12) then !.or. smetric(i,2) .eq.13
-                !structural metric 12 and 13 specify cross gradient
-                !joint inversion for velocity and conductivity so
-                !both e4d and fmm must be running
-                if (.not. simulate_e4d .or. .not. simulate_fmm) then
-                    call check_inv_opts(32, smetric(i, 2))
-                end if
-                cgmin_flag(1) = .true.
-            end if
+        
 
             read (10, *) Fw_type(i), Fw_parm(i, 1:2); call check_inv_opts(12, i)
             if (EXTRNL) then
-                read (10, *, IOSTAT=ios) str1; call check_inv_opts(33, i)
+                read (10, *, IOSTAT=io_stat) str1; call check_inv_opts(33, i)
                 inquire (file=trim(str1), EXIST=exst)
                 if (.not. exst) then
                     call check_inv_opts(34, i)
@@ -526,29 +533,29 @@ contains
                 read (10, *) zone_links(i, 1:itmp(i) + 1); call check_inv_opts(13, i)
             end if
 
-            read (10, *, IOSTAT=ios) str1
+            read (10, *, IOSTAT=io_stat) str1
             if (str1 == "ref" .or. str1 == "REF" .or. str1 == "Ref") then
                 smetric(i, 3) = 1; call check_inv_opts(14, i)
             elseif (str1 == "pref" .or. str1 == "PREF" .or. str1 == "Pref") then
                 if (.not. tl_ly) call check_inv_opts(30, i)
                 smetric(i, 3) = 2; call check_inv_opts(14, i)
                 if (.not. allocated(prefsig)) then
-                    allocate (prefsig(nelem))
+                    allocate (prefsig(n_elements))
                     if (invi) then
                         prefsig = phase
                     else
-                        prefsig = sigma
+                        prefsig = sigma_re
                     end if
                 end if
             else
-                read (str1, *, IOSTAT=ios) C_targ(i); call check_inv_opts(14, i)
+                read (str1, *, IOSTAT=io_stat) C_targ(i); call check_inv_opts(14, i)
                 if (smetric(i, 2) .eq. 3 .or. smetric(i, 2) .eq. 4 .or. smetric(i, 2) .eq. 7 .or. smetric(i, 2) .eq. 8) then
                     if (C_targ(i) .le. 0) call check_inv_opts(31, i)
                     C_targ(i) = log(C_targ(i))
                 end if
             end if
 
-            read (10, *, IOSTAT=ios) zwts(i, 1); call check_inv_opts(15, i)
+            read (10, *, IOSTAT=io_stat) zwts(i, 1); call check_inv_opts(15, i)
             call check_inv_opts(16, i)
 
             rdum = sqrt(zwts(i, 2)**2 + zwts(i, 3)**2 + zwts(i, 4)**2)
@@ -571,7 +578,7 @@ contains
 
     !!check for reference model
         if (allocated(refsig)) deallocate (refsig)
-        allocate (refsig(nelem))
+        allocate (refsig(n_elements))
         refsig = 1.0
         do i = 1, nrz
             if (smetric(i, 3) == 1) then
@@ -581,12 +588,12 @@ contains
 
                 if (allocated(element_map)) then
                     k = 0
-                    read (11, *, IOSTAT=ios) nstmp
+                    read (11, *, IOSTAT=io_stat) nstmp
                     if (invi) then
 
                         do j = 1, nstmp
-                            read (11, *, IOSTAT=ios) rsig, isig
-                            if (ios .ne. 0) then
+                            read (11, *, IOSTAT=io_stat) rsig, isig
+                            if (io_stat .ne. 0) then
                                 call check_inv_opts(20, j)
                             end if
                             if (element_map(j) .ne. 0) then
@@ -598,8 +605,8 @@ contains
                     else
 
                         do j = 1, nstmp
-                            read (11, *, IOSTAT=ios) rsig
-                            if (ios .ne. 0) then
+                            read (11, *, IOSTAT=io_stat) rsig
+                            if (io_stat .ne. 0) then
                                 call check_inv_opts(20, j)
                             end if
                             if (element_map(j) .ne. 0) then
@@ -612,12 +619,12 @@ contains
 
                     call check_inv_opts(19, k)
                 else
-                    read (11, *, IOSTAT=ios) nstmp; 
+                    read (11, *, IOSTAT=io_stat) nstmp; 
                     if (invi) then
                         k = 0
                         do j = 1, nstmp
-                            read (11, *, IOSTAT=ios) rsig, isig
-                            if (ios .ne. 0) then
+                            read (11, *, IOSTAT=io_stat) rsig, isig
+                            if (io_stat .ne. 0) then
                                 call check_inv_opts(20, j)
                             end if
                             refsig(j) = atan(isig/rsig)
@@ -626,8 +633,8 @@ contains
                     else
 
                         do j = 1, nstmp
-                            read (11, *, IOSTAT=ios) refsig(j)
-                            if (ios .ne. 0) then
+                            read (11, *, IOSTAT=io_stat) refsig(j)
+                            if (io_stat .ne. 0) then
                                 call check_inv_opts(20, j)
                             end if
                         end do
@@ -644,19 +651,19 @@ contains
             call check_inv_opts(36, junk)
         end if
 
-        read (10, *, IOSTAT=ios) beta, del_obj, beta_red; call check_inv_opts(21, junk)
+        read (10, *, IOSTAT=io_stat) beta, del_obj, beta_red; call check_inv_opts(21, junk)
         beta_s = beta
         conv_opt = 1
 
-        read (10, *, IOSTAT=ios) norm_chi2; call check_inv_opts(22, junk)
-        read (10, *, IOSTAT=ios) min_initer, max_initer; call check_inv_opts(23, junk)
+        read (10, *, IOSTAT=io_stat) norm_chi2; call check_inv_opts(22, junk)
+        read (10, *, IOSTAT=io_stat) min_initer, max_initer; call check_inv_opts(23, junk)
         delta_initer = 0.001
         initer_conv = 1e-4; 
-        read (10, *, IOSTAT=ios) min_sig, max_sig; call check_inv_opts(24, junk)
+        read (10, *, IOSTAT=io_stat) min_sig, max_sig; call check_inv_opts(24, junk)
 
-        read (10, *, IOSTAT=ios) up_opt; call check_inv_opts(25, junk)
+        read (10, *, IOSTAT=io_stat) up_opt; call check_inv_opts(25, junk)
         if (up_opt == 1) then
-            read (10, *, IOSTAT=ios) nlsp; call check_inv_opts(26, junk)
+            read (10, *, IOSTAT=io_stat) nlsp; call check_inv_opts(26, junk)
             nlsp = nlsp + 1
             allocate (lsp(nlsp))
             read (10, *) lsp(2:nlsp); call check_inv_opts(27, junk)
@@ -674,7 +681,7 @@ contains
             up_opt = 2
         end select
 
-        read (10, *, IOSTAT=ios) cull_flag, cull_dev; call check_inv_opts(28, junk)
+        read (10, *, IOSTAT=io_stat) cull_flag, cull_dev; call check_inv_opts(28, junk)
         allocate (Wd_cull(nm))
         Wd_cull = 1.0
         nec = 0
@@ -798,13 +805,13 @@ contains
 
                 open (11, file=trim(refmod_file), status='old', action='read')
                 read (11, *) nstmp
-                if (nstmp .ne. nsig) then
+                if (nstmp .ne. model_size) then
                     write (51, *) "!!!!!WARNING!!!!!"
                     write (51, *) "THE NUMBER OF ELEMENTS IN THE STARTING MODEL "
-                    write (51, *) "AND THE REFERENCE MODEL ARE DIFFERENT ", nsig, nstmp
+                    write (51, *) "AND THE REFERENCE MODEL ARE DIFFERENT ", model_size, nstmp
 
                 end if
-                allocate (refsig(nsig))
+                allocate (refsig(model_size))
                 do j = 1, nstmp
                     read (11, *) refsig(j)
                 end do
@@ -812,7 +819,7 @@ contains
                 close (51)
                 goto 100
             else
-                allocate (refsig(nsig))
+                allocate (refsig(model_size))
                 refsig = 1.0
                 goto 100
             end if
@@ -1139,7 +1146,7 @@ contains
             end if
 
         case (101)
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 open (51, file='e4d.log', status='old', action='write', position='append')
                 write (51, *) "There was a problem reading the mode in e4d.inp: aborting"
                 close (51)
@@ -1147,7 +1154,7 @@ contains
             end if
 
         case (1)
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 open (51, file='e4d.log', status='old', action='write', position='append')
                 write (51, *) " There was a problem reading the mode in e4d.inp."
                 write (51, *) " Aborting ..."
@@ -1334,7 +1341,7 @@ contains
 
         case (2)
             open (51, file='e4d.log', status='old', action='write', position='append')
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
 
                 if (mode == 1 .or. mode == 21 .or. mode == 31) then
                     write (51, *) "  ERROR: There was a problem reading the mesh config. file name in e4d.inp"
@@ -1354,9 +1361,9 @@ contains
 
             else
                 if (mode == 1 .or. mode == 21 .or. mode == 31) then
-                    write (51, *) " Mesh configuration file:          ", trim(cfg_file)
+                    write (51, *) " Mesh configuration file:          ", trim(cfg_filename)
                 else
-                    write (51, *) " Mesh file:                        ", trim(cfg_file)
+                    write (51, *) " Mesh file:                        ", trim(cfg_filename)
                 end if
             end if
             close (51)
@@ -1364,7 +1371,7 @@ contains
         case (3)
 
             open (51, file='e4d.log', status='old', action='write', position='append')
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *) "There was a problem reading the survey file name in e4d.inp: aborting"
                 write (*, *) "There was a problem reading the survey file name in e4d.inp: aborting"
                 close (51)
@@ -1376,16 +1383,16 @@ contains
 
         case (4)
             open (51, file='e4d.log', status='old', action='write', position='append')
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *) "There was a problem reading the conductivity file name in e4d.inp: aborting"
                 write (*, *) "There was a problem reading the conductivity file name in e4d.inp: aborting"
                 close (51)
                 call crash_exit
             else
                 if (mode == 2 .or. mode == 22 .or. mode == 32) then
-                    write (51, *) " Conductivity file:                ", trim(sigfile)
+                    write (51, *) " Conductivity file:                ", trim(sig_filename)
                 else
-                    write (51, *) " Starting conductivity file:       ", trim(sigfile)
+                    write (51, *) " Starting conductivity file:       ", trim(sig_filename)
                 end if
             end if
             close (51)
@@ -1393,13 +1400,13 @@ contains
         case (5)
 
             open (51, file='e4d.log', status='old', action='write', position='append')
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *) "There was a problem reading the output options file name in e4d.inp: aborting"
                 write (*, *) "There was a problem reading the output options file name in e4d.inp: aborting"
                 close (51)
                 call crash_exit
             else
-                write (51, *) " Output options file:              ", trim(outfile)
+                write (51, *) " Output options file:              ", trim(out_file)
             end if
             close (51)
 
@@ -1410,7 +1417,7 @@ contains
                 open (51, file='e4d.log', status='old', action='write', position='append')
             end if
 
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 if (im_fmm) then
                     write (51, *) "There was a problem reading the inverse options file name in fmm.inp: aborting"
                     write (*, *) "There was a problem reading the inverse options file name in fmm.inp: aborting"
@@ -1457,7 +1464,7 @@ contains
                 open (51, file='e4d.log', status='old', action='write', position='append')
             end if
 
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 if (mode == 0) then
                     write (51, *) "No reference model file name specified in e4d.inp."
                     write (*, *) "No reference model file name specified in e4d.inp."
@@ -1476,7 +1483,7 @@ contains
         case (8)
 
             open (51, file='e4d.log', status='old', action='write', position='append')
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 if (mode == 0) then
                     write (51, *) "There was no time-lapse survey file name specified and/or "
                     write (51, *) "reference model update option in e4d.inp."
@@ -1521,7 +1528,7 @@ contains
         case (9)
 
             open (51, file='e4d.log', status='old', action='write', position='append')
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *) "There was a problem reading the number of survey files in ", trim(tl_file), "  :aborting"
                 write (*, *) "There was a problem reading the number of survey files in ", trim(tl_file), "  :aborting"
                 close (51)
@@ -1540,7 +1547,7 @@ contains
 
         case (10)
             open (51, file='e4d.log', status='old', action='write', position='append')
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *) "There was a problem reading time-lapse file at time ", indx
                 write (51, *) "in the time lapse survey file: ", trim(tl_file)
                 write (*, *) "There was a problem reading time-lapse file at time ", indx
@@ -1572,7 +1579,7 @@ contains
         case (12)
 
             open (51, file='e4d.log', status='old', action='write', position='append')
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 open (51, file='e4d.log', status='old', action='write', position='append')
                 write (51, *)
                 write (51, *) " There was a problem reading the number of electrodes in the survey file ", trim(efile)
@@ -1589,7 +1596,7 @@ contains
             close (51)
 
         case (13)
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 open (51, file='e4d.log', status='old', action='write', position='append')
                 write (51, *)
                 write (51, "(A,I7.7)") "  There was a problem reading electrode number ", indx
@@ -1619,30 +1626,30 @@ contains
             call crash_exit
 
         case (15)
-            inquire (file=cfg_file(1:mnchar)//'trn', exist=exst)
+            inquire (file=cfg_filename(1:mnchar)//'trn', exist=exst)
             if (.not. exst) then
                 open (51, file='e4d.log', status='old', action='write', position='append')
                 write (51, *)
-                write (51, *) " Cannot find the mesh translation file: ", trim(cfg_file(1:mnchar))//'trn'
+                write (51, *) " Cannot find the mesh translation file: ", trim(cfg_filename(1:mnchar))//'trn'
                 write (51, *) " Aborting..."
                 write (*, *)
-                write (*, *) " Cannot find the mesh translation file: ", trim(cfg_file(1:mnchar))//'trn'
+                write (*, *) " Cannot find the mesh translation file: ", trim(cfg_filename(1:mnchar))//'trn'
                 write (*, *) " Aborting..."
                 close (51)
                 call crash_exit
             end if
 
         case (16)
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 open (51, file='e4d.log', status='old', action='write', position='append')
                 write (51, *)
                 write (51, *) " There was a problem reading the mesh "
-                write (51, *) " translation numbers in: ", trim(cfg_file(1:mnchar))//'trn'
+                write (51, *) " translation numbers in: ", trim(cfg_filename(1:mnchar))//'trn'
                 write (51, *) " Aborting ... "
                 close (51)
                 write (*, *)
                 write (*, *) " There was a problem reading the mesh "
-                write (*, *) " translation numbers in: ", trim(cfg_file(1:mnchar))//'trn'
+                write (*, *) " translation numbers in: ", trim(cfg_filename(1:mnchar))//'trn'
                 write (*, *) " Aborting ... "
                 close (51)
                 call crash_exit
@@ -1650,7 +1657,7 @@ contains
 
         case (17)
             open (51, file='e4d.log', status='old', action='write', position='append')
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 open (51, file='e4d.log', status='old', action='write', position='append')
                 write (51, *)
                 write (51, *) " There was a problem reading the number of measurements"
@@ -1675,7 +1682,7 @@ contains
             close (51)
 
         case (18)
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 open (51, file='e4d.log', status='old', action='write', position='append')
                 if (i_flag) then
                     write (51, *)
@@ -1745,29 +1752,29 @@ contains
                 write (51, *)
                 write (51, *) " In mode 1 you must provide a mesh configuration (*.cfg) file "
                 write (51, *) " In all other modes you must provide a node or element file name"
-                write (51, *) " You provided: ", trim(cfg_file)
+                write (51, *) " You provided: ", trim(cfg_filename)
                 write (51, *) " Aborting ..."
                 write (*, *)
                 write (*, *) " In mode 1 you must provide a mesh configuration (*.cfg) file "
                 write (*, *) " In all other modes you must provide a node or element file name"
-                write (*, *) " You provided: ", trim(cfg_file)
+                write (*, *) " You provided: ", trim(cfg_filename)
                 write (*, *) " Aborting ..."
             else if (indx == 1) then
                 write (51, *)
-                write (51, *) " Cannot find the mesh configuration file: ", trim(cfg_file)
+                write (51, *) " Cannot find the mesh configuration file: ", trim(cfg_filename)
                 write (51, *) " Aborting ..."
                 write (*, *)
-                write (*, *) " Cannot find the mesh configuration file: ", trim(cfg_file)
+                write (*, *) " Cannot find the mesh configuration file: ", trim(cfg_filename)
                 write (*, *) " Aborting ..."
             end if
             close (51)
             call crash_exit
 
         case (22)
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 open (51, file='e4d.log', status='old', action='write', position='append')
                 write (51, *) "There was a problem reading the number of conductivities in"
-                write (51, *) "in the conductivity file: ", trim(sigfile)
+                write (51, *) "in the conductivity file: ", trim(sig_filename)
                 write (51, *) "aborting."
                 close (51)
                 call crash_exit
@@ -1776,41 +1783,41 @@ contains
         case (23)
             if (indx == 0) then
                 open (51, file='e4d.log', status='old', action='write', position='append')
-                if (ios == 0) then
+                if (io_stat == 0) then
                     write (51, *)
                     if (i_flag) then
                         write (51, *) " COMPLEX CONDUCTIVITY FILE SUMMARY "
-                        write (51, "(A,I10.10)") "  Number of complex cond. values:   ", nsig
+                        write (51, "(A,I10.10)") "  Number of complex cond. values:   ", model_size
                     else
                         write (51, *) " CONDUCTIVITY FILE SUMMARY "
-                        write (51, "(A,I10.10)") "  Number of conductivity values:    ", nsig
+                        write (51, "(A,I10.10)") "  Number of conductivity values:    ", model_size
                     end if
                     close (51)
                 else
                     write (51, *)
                     write (51, *) " There was a problem reading the number of "
-                    write (51, *) " conductivity values in ", trim(sigfile)
+                    write (51, *) " conductivity values in ", trim(sig_filename)
                     write (51, *) " Aborting ..."
                     close (51)
                     write (*, *)
                     write (*, *) " There was a problem reading the number of "
-                    write (*, *) " conductivity values in ", trim(sigfile)
+                    write (*, *) " conductivity values in ", trim(sig_filename)
                     write (*, *) " Aborting ..."
                     close (51)
                     call crash_exit
                 end if
             end if
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 open (51, file='e4d.log', status='old', action='write', position='append')
                 write (51, *)
                 write (51, "(A,I10.10)") "  There was a problem reading conductivity number ", indx
-                write (51, *) " in the conductivity file: ", trim(sigfile), "."
+                write (51, *) " in the conductivity file: ", trim(sig_filename), "."
                 if (i_flag) write (51, *) " (hint: make sure both amplitude and phase are listed for each element"
                 write (51, *) " Aborting ..."
                 close (51)
                 write (*, *)
                 write (*, "(A,I10.10)") "  There was a problem reading conductivity number ", indx
-                write (*, *) " in the conductivity file: ", trim(sigfile), "."
+                write (*, *) " in the conductivity file: ", trim(sig_filename), "."
                 if (i_flag) write (*, *) " (hint: make sure both amplitude and phase are listed for each element"
                 write (*, *) " Aborting ..."
                 close (51)
@@ -1837,11 +1844,11 @@ contains
         case (25)
             open (51, file='e4d.log', status='old', action='write', position='append')
             write (51, *)
-            write (51, *) " Can't find the conductivity file: ", trim(sigfile)
+            write (51, *) " Can't find the conductivity file: ", trim(sig_filename)
             write (51, *) " Aborting ..."
             close (51)
             write (*, *)
-            write (*, *) " Can't find the conductivity file: ", trim(sigfile)
+            write (*, *) " Can't find the conductivity file: ", trim(sig_filename)
             write (*, *) " Aborting ..."
             close (51)
             call crash_exit
@@ -1851,27 +1858,27 @@ contains
             if (i_flag) then
                 write (51, *)
                 write (51, *) " All real and complex conductivities must be positive"
-                write (51, *) " The conductivities on line: ", indx, " are ", sigma(indx), sigmai(indx)
-                write (51, *) " See conductivity file: ", trim(sigfile)
+                write (51, *) " The conductivities on line: ", indx, " are ", sigma_re(indx), sigma_im(indx)
+                write (51, *) " See conductivity file: ", trim(sig_filename)
                 write (51, *) " Aborting ..."
 
                 write (*, *)
                 write (*, *) " All real and complex conductivities must be positive"
-                write (*, *) " The conductivities on line: ", indx, " are ", sigma(indx), sigmai(indx)
-                write (*, *) " See conductivity file: ", trim(sigfile)
+                write (*, *) " The conductivities on line: ", indx, " are ", sigma_re(indx), sigma_im(indx)
+                write (*, *) " See conductivity file: ", trim(sig_filename)
                 write (*, *) " Aborting ..."
 
             else
                 write (51, *)
                 write (51, *) " All conductivities must be positive"
-                write (51, *) " The conductivity on line: ", indx, " is ", sigma(indx)
-                write (51, *) " See conductivity file: ", trim(sigfile)
+                write (51, *) " The conductivity on line: ", indx, " is ", sigma_re(indx)
+                write (51, *) " See conductivity file: ", trim(sig_filename)
                 write (51, *) " Aborting ..."
                 write (51, *)
                 write (*, *)
                 write (*, *) " All conductivities must be positive"
-                write (*, *) " The conductivity on line: ", indx, " is ", sigma(indx)
-                write (*, *) " See conductivity file: ", trim(sigfile)
+                write (*, *) " The conductivity on line: ", indx, " is ", sigma_re(indx)
+                write (*, *) " See conductivity file: ", trim(sig_filename)
                 write (*, *) " Aborting ..."
                 write (*, *)
 
@@ -1905,9 +1912,9 @@ contains
         case (28)
             open (51, file='e4d.log', status='old', action='write', position='append')
             write (51, *)
-            write (51, *) "Can't find the conductivity list file ", trim(sigfile), " specified in e4d.inp."
+            write (51, *) "Can't find the conductivity list file ", trim(sig_filename), " specified in e4d.inp."
             write (51, *) "aborting ..."
-            write (*, *) "Can't find the conductivity list file ", trim(sigfile), " specified in e4d.inp."
+            write (*, *) "Can't find the conductivity list file ", trim(sig_filename), " specified in e4d.inp."
             write (*, *) "aborting ..."
             close (51)
             call crash_exit
@@ -1916,10 +1923,10 @@ contains
             open (51, file='e4d.log', status='old', action='write', position='append')
             write (51, *)
             write (51, *) "There was a problem reading the number of files listed "
-            write (51, *) "on the first lint of ", trim(sigfile), "."
+            write (51, *) "on the first lint of ", trim(sig_filename), "."
             write (51, *) "aborting ..."
             write (*, *) "There was a problem reading the number of files listed "
-            write (*, *) "on the first lint of ", trim(sigfile), "."
+            write (*, *) "on the first lint of ", trim(sig_filename), "."
             write (*, *) "aborting ..."
 
             close (51)
@@ -1929,12 +1936,12 @@ contains
             open (51, file='e4d.log', status='old', action='write', position='append')
             write (51, *)
             write (51, *) "There was a problem reading conductivity file number ", indx
-            write (51, *) "in the conductivity list file: ", trim(sigfile)
+            write (51, *) "in the conductivity list file: ", trim(sig_filename)
             write (51, *) "Remember to include the output file name in the second column"
             write (51, *) "aborting ..."
 
             write (*, *) "There was a problem reading conductivity file number ", indx
-            write (*, *) "in the conductivity list file: ", trim(sigfile)
+            write (*, *) "in the conductivity list file: ", trim(sig_filename)
             write (51, *) "Remember to include the output file name in the second column"
             write (*, *) "aborting ..."
 
@@ -1945,34 +1952,34 @@ contains
             open (51, file='e4d.log', status='old', action='write', position='append')
             write (51, *)
             write (51, *) "Cannot find find file ", trim(tl_cfils(indx, 1)), " listed in"
-            write (51, *) "the conductivity list file: ", trim(sigfile)
+            write (51, *) "the conductivity list file: ", trim(sig_filename)
             write (51, *) "aborting ..."
             write (*, *)
             write (*, *) "Cannot find find file ", trim(tl_cfils(indx, 1)), " listed in"
-            write (*, *) "the conductivity list file: ", trim(sigfile)
+            write (*, *) "the conductivity list file: ", trim(sig_filename)
             write (*, *) "aborting ..."
             close (51)
             call crash_exit
 
         case (121)
             open (51, file='e4d.log', status='old', action='write', position='append')
-            if (cfg_file(mnchar + 2:mnchar + 6) == ".node") then
-                inquire (file=trim(cfg_file), exist=exst)
+            if (cfg_filename(mnchar + 2:mnchar + 6) == ".node") then
+                inquire (file=trim(cfg_filename), exist=exst)
                 if (.not. exst) then
                     write (51, *)
                     write (*, *)
-                    write (51, *) " Cannot find the specified mesh node file: ", trim(cfg_file)
-                    write (*, *) " Cannot find the specified mesh node file: ", trim(cfg_file)
+                    write (51, *) " Cannot find the specified mesh node file: ", trim(cfg_filename)
+                    write (*, *) " Cannot find the specified mesh node file: ", trim(cfg_filename)
                     close (51)
                     call crash_exit
                 end if
-            elseif (cfg_file(mnchar + 2:mnchar + 5) == ".ele") then
-                inquire (file=trim(cfg_file), exist=exst)
+            elseif (cfg_filename(mnchar + 2:mnchar + 5) == ".ele") then
+                inquire (file=trim(cfg_filename), exist=exst)
                 if (.not. exst) then
                     write (51, *)
                     write (*, *)
-                    write (51, *) " Cannot find the specified mesh element file: ", trim(cfg_file)
-                    write (*, *) " Cannot find the specified mesh element file: ", trim(cfg_file)
+                    write (51, *) " Cannot find the specified mesh element file: ", trim(cfg_filename)
+                    write (*, *) " Cannot find the specified mesh element file: ", trim(cfg_filename)
                     close (51)
                     call crash_exit
                 end if
@@ -1981,10 +1988,10 @@ contains
                 write (*, *)
                 write (51, *) " If mode > 1 you must provide the name of the mesh"
                 write (51, *) " node file (*.node) or mesh element file (*.ele) ."
-                write (51, *) " You provided: ", trim(cfg_file)
+                write (51, *) " You provided: ", trim(cfg_filename)
                 write (*, *) " If mode > 1 you must provide the name of the mesh"
                 write (*, *) " node file (*.node) or mesh element file (*.ele) ."
-                write (*, *) " You provided: ", trim(cfg_file)
+                write (*, *) " You provided: ", trim(cfg_filename)
                 close (51)
                 call crash_exit
             end if
@@ -2062,7 +2069,7 @@ contains
                 open (51, file='e4d.log', status='old', action='write', position='append')
             end if
 
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *)
                 write (51, *) " There was a problem reading the number of constraint"
                 if (invi) then
@@ -2104,7 +2111,7 @@ contains
 
         case (2)
 
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 if (im_fmm) then
                     open (51, file='fmm.log', status='old', action='write', position='append')
                 else
@@ -2137,7 +2144,7 @@ contains
             end if
 
         case (3)
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 if (im_fmm) then
                     open (51, file='fmm.log', status='old', action='write', position='append')
                 else
@@ -2169,7 +2176,7 @@ contains
             end if
 
         case (4)
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 if (im_fmm) then
                     open (51, file='fmm.log', status='old', action='write', position='append')
                 else
@@ -2200,7 +2207,7 @@ contains
             end if
 
         case (5)
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 if (im_fmm) then
                     open (51, file='fmm.log', status='old', action='write', position='append')
                 else
@@ -2232,7 +2239,7 @@ contains
             end if
 
         case (6)
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 if (im_fmm) then
                     open (51, file='fmm.log', status='old', action='write', position='append')
                 else
@@ -2262,7 +2269,7 @@ contains
             end if
 
         case (7)
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 if (im_fmm) then
                     open (51, file='fmm.log', status='old', action='write', position='append')
                 else
@@ -2330,7 +2337,7 @@ contains
             else
                 open (51, file='e4d.log', status='old', action='write', position='append')
             end if
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *)
                 write (51, *) " There was a problem reading the directional weights"
                 write (51, *) " for constraint block: ", indx
@@ -2374,7 +2381,7 @@ contains
             else
                 open (51, file='e4d.log', status='old', action='write', position='append')
             end if
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *)
                 write (51, *) " There was a problem reading reweighting function parameters"
                 write (51, *) " for constraint ", indx
@@ -2423,7 +2430,7 @@ contains
             else
                 open (51, file='e4d.log', status='old', action='write', position='append')
             end if
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *)
                 write (51, *) " There was a problem reading the zone links for"
                 write (51, *) " constraint block :", indx
@@ -2454,7 +2461,7 @@ contains
             else
                 open (51, file='e4d.log', status='old', action='write', position='append')
             end if
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *)
                 write (51, *) " There was a problem reading the reference value"
                 write (51, *) " for constraint block: ", indx
@@ -2482,7 +2489,7 @@ contains
             else
                 open (51, file='e4d.log', status='old', action='write', position='append')
             end if
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *)
                 write (51, *) " There was a problem reading the relative weight"
                 write (51, *) " for constraint block ", indx
@@ -2556,7 +2563,7 @@ contains
             close (51)
 
         case (19)
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 if (im_fmm) then
                     open (51, file='fmm.log', status='old', action='write', position='append')
                 else
@@ -2568,7 +2575,7 @@ contains
                 write (51, *) " Aborting ..."
                 close (51)
                 call crash_exit
-            elseif (indx .ne. nelem) then
+            elseif (indx .ne. n_elements) then
                 if (im_fmm) then
                     open (51, file='fmm.log', status='old', action='write', position='append')
                 else
@@ -2576,7 +2583,7 @@ contains
                 end if
                 write (51, *)
                 write (51, *) " The number of values specified in: ", trim(refmod_file)
-                write (51, *) " is not equal to the number of values in: ", trim(sigfile)
+                write (51, *) " is not equal to the number of values in: ", trim(sig_filename)
                 write (51, *) " Aborting ..."
                 close (51)
                 call crash_exit
@@ -2603,7 +2610,7 @@ contains
                 open (51, file='e4d.log', status='old', action='write', position='append')
             end if
 
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *)
                 write (51, *) " There was a problem reading the global starting constraint weight"
                 write (51, *) " (beta) line in the inversion options file: ", trim(invfile)
@@ -2658,7 +2665,7 @@ contains
             else
                 open (51, file='e4d.log', status='old', action='write', position='append')
             end if
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *)
                 write (51, *) " There was a problem reading the target chi-squared value"
                 if (invi) then
@@ -2691,7 +2698,7 @@ contains
             else
                 open (51, file='e4d.log', status='old', action='write', position='append')
             end if
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *)
                 write (51, *) " There was a problem reading the maximum number of inner"
                 if (invi) then
@@ -2734,7 +2741,7 @@ contains
             else
                 open (51, file='e4d.log', status='old', action='write', position='append')
             end if
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *)
                 write (51, *) " There was a problem reading the max and min"
                 write (51, *) " conductivities in the inverse options file: ", trim(invfile)
@@ -2784,7 +2791,7 @@ contains
             else
                 open (51, file='e4d.log', status='old', action='write', position='append')
             end if
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *)
                 write (51, *) " There was a problem reading the update option"
                 if (invi) then
@@ -2826,7 +2833,7 @@ contains
             else
                 open (51, file='e4d.log', status='old', action='write', position='append')
             end if
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *)
                 write (51, *) " There was a problem reading the number of line search "
                 write (51, *) " Aborting ..."
@@ -2854,7 +2861,7 @@ contains
             else
                 open (51, file='e4d.log', status='old', action='write', position='append')
             end if
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *)
                 write (51, *) " There was a problem reading the line search scaling "
                 write (51, *) " factors."
@@ -2892,7 +2899,7 @@ contains
             else
                 open (51, file='e4d.log', status='old', action='write', position='append')
             end if
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 write (51, *)
                 write (51, *) " There was a problem reading the data culling options "
                 if (invi) then
@@ -2996,8 +3003,6 @@ contains
             write (51, *) "Structural metrics 12 and 13 are for joint inversion"
             write (51, *) "of travel time and resistivity data, and require both"
             write (51, *) "E4D and FMM to be running in inverse mode"
-            if (.not. simulate_e4d) write (51, *) "E4D is not running ... Aborting"
-            if (.not. simulate_fmm) write (51, *) "FMM is not running ... Aborting"
             close (51)
             write (*, *) "Joint inversion constraints have been specified, but not"
             write (*, *) "all of the required simulators are running. See log files."
@@ -3006,7 +3011,7 @@ contains
 
         case (33)
 
-            if (ios .ne. 0) then
+            if (io_stat .ne. 0) then
                 if (im_fmm) then
                     open (52, file='fmm.log', status='old', action='write', position='append')
                 else
@@ -3089,18 +3094,18 @@ contains
         end if
 
         open (10, file=efile, status='old', action='read')
-        read (10, *, IOSTAT=ios) ne; call check_inp(12, junk)
+        read (10, *, IOSTAT=io_stat) ne; call check_inp(12, junk)
 
         allocate (e_pos(ne, 4))
         do i = 1, ne
-            read (10, *, IOSTAT=ios) junk, etmp; call check_inp(13, i)
+            read (10, *, IOSTAT=io_stat) junk, etmp; call check_inp(13, i)
             if (junk > ne) call check_inp(14, i)
             e_pos(junk, 1:4) = etmp
         end do
 
         ! call check_keywords(10) ! Commenting out this call since this subroutine seems to lose track of the line containing the number of measurements. - OFGN 1/10/23
         ! Read in the survey
-        read (10, fmt=*, IOSTAT=ios) nm
+        read (10, fmt=*, IOSTAT=io_stat) nm
         call check_inp(17, nm)
 
         allocate (dobs(nm), s_conf(nm, 4), Wd(nm))
@@ -3109,7 +3114,7 @@ contains
             allocate (dobsi(nm), Wdi(nm))
 
             do i = 1, nm
-                read (10, *, IOSTAT=ios) junk, s_conf(i, 1:4), dobs(i), Wd(i), dobsi(i), Wdi(i); call check_inp(18, i)
+                read (10, *, IOSTAT=io_stat) junk, s_conf(i, 1:4), dobs(i), Wd(i), dobsi(i), Wdi(i); call check_inp(18, i)
                 if (Wd(i) <= 0 .or. Wdi(i) <= 0) then
                     Wd(i) = 1e15
                     Wdi(i) = 1e15
@@ -3129,7 +3134,7 @@ contains
 
         else
             do i = 1, nm
-                read (10, *, IOSTAT=ios) junk, s_conf(i, 1:4), dobs(i), Wd(i); call check_inp(18, i)
+                read (10, *, IOSTAT=io_stat) junk, s_conf(i, 1:4), dobs(i), Wd(i); call check_inp(18, i)
 
                 if (Wd(i) <= 0) then
                     Wd(i) = 1e15
@@ -3248,15 +3253,15 @@ contains
         integer :: i
         mnchar = 0
         do i = 1, 40
-            if (cfg_file(i:i) == '.') then
+            if (cfg_filename(i:i) == '.') then
                 mnchar = i
                 exit
             end if
         end do
 
         call check_inp(15, junk)
-        open (21, file=cfg_file(1:mnchar)//'trn', status='old')
-        read (21, *, IOSTAT=ios) xorig, yorig, zorig; call check_inp(16, junk)
+        open (21, file=cfg_filename(1:mnchar)//'trn', status='old')
+        read (21, *, IOSTAT=io_stat) xorig, yorig, zorig; call check_inp(16, junk)
         close (21)
         e_pos(:, 1) = e_pos(:, 1) - xorig
         e_pos(:, 2) = e_pos(:, 2) - yorig
@@ -3269,59 +3274,59 @@ contains
     subroutine read_conductivity
         implicit none
         integer :: i, junk, npre, nchr
-        logical :: exst
+        logical :: file_exists
         real :: tsig
-        if (allocated(sigma)) deallocate (sigma)
+        if (allocated(sigma_re)) deallocate (sigma_re)
         if (mode .ne. 1) then
-            inquire (file=trim(trim(sigfile)), exist=exst)
-            if (.not. exst) then
-                read (sigfile, *, IOSTAT=ios) tsig
-                if (ios .ne. 0) then
+            inquire (file=trim(trim(sig_filename)), exist=file_exists)
+            if (.not. file_exists) then
+                read (sig_filename, *, IOSTAT=io_stat) tsig
+                if (io_stat .ne. 0) then
                     call check_inp(25, junk)
                 else
-                    nchr = len_trim(cfg_file)
+                    nchr = len_trim(cfg_filename)
                     do i = 1, nchr
-                        if (cfg_file(i:i) == '.') then
+                        if (cfg_filename(i:i) == '.') then
                             npre = i + 1; 
                             exit
                         end if
                     end do
-                    inquire (file=cfg_file(1:npre)//".ele", exist=exst)
-                    if (.not. exst) then
+                    inquire (file=cfg_filename(1:npre)//".ele", exist=file_exists)
+                    if (.not. file_exists) then
                         open (51, file='e4d.log', status='old', action='write')
                         write (51, *)
-                        write (51, *) ' Cannot find the element file : ', cfg_file(1:npre)//'.ele'
+                        write (51, *) ' Cannot find the element file : ', cfg_filename(1:npre)//'.ele'
                         close (51)
                         write (*, *)
-                        write (*, *) ' Cannot find the ele file : ', cfg_file(1:npre)//'.ele'
+                        write (*, *) ' Cannot find the ele file : ', cfg_filename(1:npre)//'.ele'
                         close (51)
                         call crash_exit
                     else
-                        open (10, file=cfg_file(1:npre)//".ele", status='old', action='read')
-                        read (10, *) nsig
+                        open (10, file=cfg_filename(1:npre)//".ele", status='old', action='read')
+                        read (10, *) model_size
                         close (10)
-                        allocate (sigma(nsig))
-                        sigma = tsig
+                        allocate (sigma_re(model_size))
+                        sigma_re = tsig
                         return
                     end if
                 end if
             end if
-            open (10, file=sigfile, status='old', action='read')
-            read (10, *, IOSTAT=ios) nsig; call check_inp(23, 0)
+            open (10, file=sig_filename, status='old', action='read')
+            read (10, *, IOSTAT=io_stat) model_size; call check_inp(23, 0)
 
-            allocate (sigma(nsig))
+            allocate (sigma_re(model_size))
 
             if (i_flag) then
-                if (allocated(sigmai)) deallocate (sigmai)
-                allocate (sigmai(nsig))
-                do i = 1, nsig
-                    read (10, *, IOSTAT=ios) sigma(i), sigmai(i); call check_inp(23, i)
-                    if (sigma(i) <= 0 .or. sigmai(i) <= 0) call check_inp(26, i)
+                if (allocated(sigma_im)) deallocate (sigma_im)
+                allocate (sigma_im(model_size))
+                do i = 1, model_size
+                    read (10, *, IOSTAT=io_stat) sigma_re(i), sigma_im(i); call check_inp(23, i)
+                    if (sigma_re(i) <= 0 .or. sigma_im(i) <= 0) call check_inp(26, i)
                 end do
             else
-                do i = 1, nsig
-                    read (10, *, IOSTAT=ios) sigma(i); call check_inp(23, i)
-                    if (sigma(i) <= 0) call check_inp(26, i)
+                do i = 1, model_size
+                    read (10, *, IOSTAT=io_stat) sigma_re(i); call check_inp(23, i)
+                    if (sigma_re(i) <= 0) call check_inp(26, i)
                 end do
                 close (10)
             end if
@@ -3338,14 +3343,14 @@ contains
         integer :: ios, i
 
     !!see if the file ends with .lst
-        slen = len_trim(sigfile)
-        if (sigfile(slen - 3:slen) == ".lst") then
+        slen = len_trim(sig_filename)
+        if (sig_filename(slen - 3:slen) == ".lst") then
             !check to see if the file exists
-            inquire (file=trim(trim(sigfile)), exist=exst)
+            inquire (file=trim(trim(sig_filename)), exist=exst)
             if (.not. exst) then
                 call check_inp(28, 1)
             end if
-            open (10, file=trim(sigfile), status='old', action='read')
+            open (10, file=trim(sig_filename), status='old', action='read')
 
             read (10, *, IOSTAT=ios) slen
             if (ios .ne. 0) then
@@ -3392,28 +3397,28 @@ contains
         character, dimension(:, :), allocatable :: output_str
 
         character*40 :: chk_sigfile
-        character*80 :: dp_file
+        character*80 :: resid_prefix
 
-        integer :: i, junk, npot, ist, dp_flag, check
+        integer :: i, junk, npot, ist, resid_flag, check
         logical :: exst, st
 
         junk = 1
-        read (10, *, IOSTAT=ios) cfg_file
+        read (10, *, IOSTAT=io_stat) cfg_filename
 
      !!Determine if the mesh file is a .cfg file or if meshfiles are provided
         mnchar = 0
         do i = 1, 40
-            if (cfg_file(i:i) == '.') then
+            if (cfg_filename(i:i) == '.') then
                 mnchar = i
                 exit
             end if
         end do
 
-        if (cfg_file(mnchar + 1:mnchar + 3) == "cfg") then
+        if (cfg_filename(mnchar + 1:mnchar + 3) == "cfg") then
             cfg_flag = .true.
         end if
 
-        inquire (file=trim(cfg_file), exist=exst)
+        inquire (file=trim(cfg_filename), exist=exst)
         open (51, file='e4d.log', status='old', action='write', position='append')
         if (.not. exst) then
             if (cfg_flag) then
@@ -3423,55 +3428,59 @@ contains
             end if
         else
             if (cfg_flag) then
-                write (51, *) " Mesh configuration file:          ", trim(cfg_file)
+                write (51, *) " Mesh configuration file:          ", trim(cfg_filename)
             else
-                write (51, *) " Mesh file:                        ", trim(cfg_file)
+                write (51, *) " Mesh file:                        ", trim(cfg_filename)
             end if
         end if
         close (51)
 
         ! if not a cfg file then check survey file, conductivity file, output options file
         if (.not. cfg_flag) then
-            read (10, *, IOSTAT=ios) efile; call check_inp(3, junk)
-            read (10, *, IOSTAT=ios) sigfile; call check_inp(4, junk)
+            read (10, *, IOSTAT=io_stat) efile; call check_inp(3, junk)
+            read (10, *, IOSTAT=io_stat) sig_filename; call check_inp(4, junk)
 
-            chk_sigfile = sigfile
+            chk_sigfile = sig_filename
             chk_sigfile = lcase(chk_sigfile)
             if (trim(chk_sigfile) == "average") then
-                ave_sig = .true.
+                use_mean = .true.
+            else if (trim(chk_sigfile) == "mean") then
+                use_mean = .true.
+            else if (trim(chk_sigfile) == "median") then
+                use_median = .true.
             end if
-            read (10, *) outfile; call check_inp(5, junk)
+            read (10, *) out_file; call check_inp(5, junk)
 
             ! check for inversion options file entry in file (not complex inversion file)
             if (i_flag) then
-                read (10, *, IOSTAT=ios) invfile, iinvfile; call check_inp(6, junk)
-                read (10, *, IOSTAT=ios) refmod_file; call check_inp(7, junk)
+                read (10, *, IOSTAT=io_stat) invfile, iinvfile; call check_inp(6, junk)
+                read (10, *, IOSTAT=io_stat) refmod_file; call check_inp(7, junk)
             else
-                read (10, *, IOSTAT=ios) invfile; call check_inp(6, junk)
-                read (10, *, IOSTAT=ios) refmod_file; call check_inp(7, junk)
+                read (10, *, IOSTAT=io_stat) invfile; call check_inp(6, junk)
+                read (10, *, IOSTAT=io_stat) refmod_file; call check_inp(7, junk)
             end if
 
             ! time-lapse optons
             check = 0
-            read (10, *, IOSTAT=ios) tl_file, check; call check_inp(8, check)
+            read (10, *, IOSTAT=io_stat) tl_file, check; call check_inp(8, check)
 
             ! check the survey file
             call read_survey
 
                 !! check the conductivity file or list of files
-            if (.not. ave_sig) then
+            if ((.not. use_mean) .and. (.not. use_median)) then
                 multi_forward = .false.
-                call check_for_list
+                call check_for_list()
             end if
 
-            if (.not. ave_sig .and. .not. multi_forward) then
-                call read_conductivity
+            if (((.not. use_mean) .and. (.not. use_median)) .and. .not. multi_forward) then
+                call read_conductivity()
             end if
 
                 !! check the output options file
-            open (15, file=outfile, status='old', action='read')
-            read (15, *, IOSTAT=ist) dp_flag; if (ist .ne. 0) goto 11
-            read (15, *, IOSTAT=ist) dp_file; if (ist .ne. 0) goto 12
+            open (15, file=out_file, status='old', action='read')
+            read (15, *, IOSTAT=ist) resid_flag; if (ist .ne. 0) goto 11
+            read (15, *, IOSTAT=ist) resid_prefix; if (ist .ne. 0) goto 12
             read (15, *, IOSTAT=ist) npot; if (ist .ne. 0) goto 13
 
             if (npot > 0) then
@@ -3484,12 +3493,12 @@ contains
 
                 !! check time-lapse options
             if (tl_ly) then
-                open (21, file=trim(tl_file), status='old', action='read', IOSTAT=ios)
-                read (21, *, IOSTAT=ios) ntl; call check_inp(9, junk)
+                open (21, file=trim(tl_file), status='old', action='read', IOSTAT=io_stat)
+                read (21, *, IOSTAT=io_stat) ntl; call check_inp(9, junk)
                 allocate (tl_dfils(ntl), tlt(ntl))
 
                 do i = 1, ntl
-                    read (21, *, IOSTAT=ios) tl_dfils(i), tlt(i); call check_inp(10, i)
+                    read (21, *, IOSTAT=io_stat) tl_dfils(i), tlt(i); call check_inp(10, i)
                     inquire (file=trim(tl_dfils(i)), exist=exst)
                     if (.not. exst) call check_inp(11, i)
                 end do
@@ -3524,36 +3533,36 @@ contains
 11      continue
         open (51, file='e4d.log', status='old', action='write', position='append')
         write (51, *)
-        write (51, *) ' The was a problem reading the first line in the output file: ', trim(outfile)
+        write (51, *) ' The was a problem reading the first line in the output file: ', trim(out_file)
         close (51)
         write (*, *)
-        write (*, *) ' There was a problem reading the first line in the output file: ', trim(outfile)
+        write (*, *) ' There was a problem reading the first line in the output file: ', trim(out_file)
         return
 
 12      continue
         open (51, file='e4d.log', status='old', action='write', position='append')
         write (51, *)
-        write (51, *) 'There was a problem reading the predicted data file name in: ', trim(outfile)
+        write (51, *) 'There was a problem reading the predicted data file name in: ', trim(out_file)
         close (51)
         write (*, *)
-        write (*, *) 'The was a problem reading the predicted data file in: ', trim(outfile)
+        write (*, *) 'The was a problem reading the predicted data file in: ', trim(out_file)
         return
 
 13      continue
         open (51, file='e4d.log', status='old', action='write', position='append')
         write (51, *)
-        write (51, *) ' There was a problem reading the number of potential fields to write in: ', trim(outfile)
+        write (51, *) ' There was a problem reading the number of potential fields to write in: ', trim(out_file)
         close (51)
         write (*, *)
-        write (*, *) ' There was a problem reading the number of potential fields to write in: ', trim(outfile)
+        write (*, *) ' There was a problem reading the number of potential fields to write in: ', trim(out_file)
         return
 
 14      continue
         open (51, file='e4d.log', status='old', action='write', position='append')
-        write (51, *) ' There was a problem reading potential field index: ', i, ' in: ', trim(outfile)
+        write (51, *) ' There was a problem reading potential field index: ', i, ' in: ', trim(out_file)
         close (51)
         write (*, *)
-        write (*, *) ' There was a problem reading potential field index: ', i, ' in: ', trim(outfile)
+        write (*, *) ' There was a problem reading potential field index: ', i, ' in: ', trim(out_file)
         return
 
     end subroutine check_files

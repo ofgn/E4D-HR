@@ -120,9 +120,9 @@ contains
 
     !!Allocate the mapping vectors. There are at most 10 contributions 
     !!to the forward coupling matrix per element
-    allocate(rows(10*nelem),cols(10*nelem))
-    allocate(A_map(10*nelem),S_map(10*nelem))
-    allocate(delA(10*nelem))
+    allocate(rows(10*n_elements),cols(10*n_elements))
+    allocate(A_map(10*n_elements),S_map(10*n_elements))
+    allocate(delA(10*n_elements))
     
  
     !!Count the number of node pairs (i.e. coupling matrix elements)
@@ -143,7 +143,7 @@ contains
     A_tmp(rows(1),3) = cols(1)
  
     !!loop over the elements   
-    do k=1,nelem    
+    do k=1,n_elements    
        
        !!loop over each node in this element
        do i=1,4
@@ -234,7 +234,7 @@ contains
     mcount = 0
     delA=0
   
-    do k=1,nelem
+    do k=1,n_elements
    
        !!get the 4 nodes for this element 
        x1 = dble(nodes(elements(k,1),1))

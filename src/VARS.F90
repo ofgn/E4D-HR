@@ -21,10 +21,11 @@ implicit none
 
 
   !FILES
-  character*40 :: cfg_file                                  !!file containing the mesh options
+  character(len=128) :: cfg_filename                       !!file containing the mesh options
+  character(len=128) :: mesh_prefix
   character*40 :: efile                                    !!survey configuration file
-  character*40 :: sigfile                                  !!bulk conductivity file
-  character*40 :: outfile                                  !!output options file
+  character*40 :: sig_filename                                  !!bulk conductivity file
+  character*40 :: out_file                                  !!output options file
   character*40 :: invfile                                  !!inversion options file
   character*40 :: iinvfile                                  !!inversion options file for phase components
   character*10 :: com_inp                                  !!command line input
@@ -32,6 +33,7 @@ implicit none
   character*40 :: tmpstr                                   !!shareable string
   
   !Integers
+  integer :: mesh_prefix_length
   integer :: max_iters_dc=999, max_iters_ip=999                    !! maximum number of iterations to run for each type of inversion, dc and IP
   integer :: IP_param_type=0                               !! type of parameter for IP. 0 for phase, 1 for int charge, 2 for PFE%
   integer :: my_rank                                       !!my mpi rank
@@ -41,7 +43,7 @@ implicit none
   integer :: frun_flag                                     !!solver flag
   integer :: mode                                          !!run mode
   integer :: ne,tne                                        !!num my electrodes, total num electrodes
-  integer :: nsig                                          !!number of elements, sigma values
+  integer :: model_size                                          !!number of elements, sigma values
   integer :: nm                                            !!number of measurements
   integer :: msh_opt                                       !!mesh option flag
   integer :: nrz                                           !!number of regularization zones,total #zones
@@ -49,7 +51,7 @@ implicit none
   integer :: min_initer,max_initer                         !!min/max inner iterations
   integer :: bound_flag                                    !!boundary options flag
   integer :: nnodes                                        !!number of nodes
-  integer :: nelem                                         !!number of elements (same as nsig)
+  integer :: n_elements                                         !!number of elements (same as nsig)
   integer :: nfaces                                        !!number of faces
   integer :: nvals                                         !!number of non-zeros in coupling mat
   integer :: n_srank                                       !!number slaves in communicator SCOMM
@@ -60,7 +62,7 @@ implicit none
   integer :: nmy_drows                                     !!number of data in my assembly vector
   integer :: iopt = 1                                      !!flag for real or complex inversion
   integer :: iter                                          !!outer inverse iteration
-  integer :: nj_rows                                       !!number of jacobian rows I own
+  integer :: n_data_assigned                                       !!number of jacobian rows I own
   integer :: nsig_max                                      !!number of conductivities at max set value
   integer :: nsig_min                                      !!number of conductivities at min set value
   integer :: smin,smax                                     !!slave indices for min and max run times
@@ -83,8 +85,8 @@ implicit none
   real :: my_frt,my_abt                                    !!my forward run time,my A build times
   real :: my_kspt                                          !!KSP solver context build time
   real :: my_jbt
-  real :: mean_sig                                         !!average apparent conductivity
-  real :: mean_phase                                       !!average apparent phase
+  real :: sigma_0                                         !!average apparent conductivity
+  real :: phase_0                                       !!average apparent phase
 
   !Logicals
   logical, dimension(:), allocatable :: J_on_off           !!which elements to estimate
@@ -102,16 +104,18 @@ implicit none
   logical :: opt_flag = .false.                            !!flag to optimize survey
   logical :: psf_flag = .false.                            !!flag to write point spread functions
   logical :: analytic = .false.
-  logical :: ave_sig = .false.                             !!flag to use average apparent conductivity as starting model 
+  logical :: use_mean = .false.                                 ! Flag to use a weighted mean as the initial model
+  logical :: use_median = .false.                               ! Flag to use a median as the initial model
   logical :: im_fmm = .false.                              !!true if I'm a node running on the fmm side
   logical, dimension(10) :: cgmin_flag = .false.           !!cross grad joint inversion on/off flags
   logical :: jaco_out_opt = .false.                        !!flag for outputting the jacobian matrix in mode 2
   logical :: jaco_ascii_opt = .false.                      !!jaco output format flag
+  logical :: vtk_flag = .true.
   
   !Integer Arrays
   integer, dimension(:,:), allocatable :: s_conf           !!abmn survey configuration
   integer, dimension(:,:), allocatable :: eind             !!electrode assignments
-  integer, dimension(:,:),allocatable :: jind              !!measurement assignments (jaco rows)  
+  integer, dimension(:,:),allocatable :: data_assignments              !!measurement assignments (jaco rows)  
   integer, dimension(:,:),allocatable :: tind
   integer, dimension(:,:), allocatable :: elements         !!elements connections
   integer, dimension(:,:), allocatable :: faces            !!face connections
@@ -142,8 +146,8 @@ implicit none
   real, dimension(:), allocatable :: dobs_not              !!background observed data
   real, dimension(:), allocatable :: dpred,dpred_not       !!predicted data vector, background pred
   real, dimension(:), allocatable :: dpredi
-  real, dimension(:), allocatable :: sigma,refsig,prefsig  !!element conductivities
-  real, dimension(:), allocatable :: sigmai                !!imaginary element conductivities
+  real, dimension(:), allocatable :: sigma_re,refsig,prefsig  !!element conductivities
+  real, dimension(:), allocatable :: sigma_im                !!imaginary element conductivities
   real, dimension(:), allocatable :: sig_not               !!background conductivity
   real, dimension(:,:), allocatable :: nodes               !!node positions
   real, dimension(:), allocatable :: my_dvals              !!values in my data assembly vector

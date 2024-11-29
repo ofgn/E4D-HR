@@ -26,7 +26,7 @@ contains
     !!allocate and populate a logical array indicating which nodes are used
     allocate(inc_nodes(nnodes))
     inc_nodes = .false.
-    do i=1,nelem
+    do i=1,n_elements
        if(zones(i) .ne. -999) then
           do j=1,4
              inc_nodes(elements(i,j))=.true.
@@ -47,10 +47,10 @@ contains
     nnew_nodes = cpos
  
     !!map the elements
-    allocate(element_map(nelem))
+    allocate(element_map(n_elements))
     element_map = 0
     cpos = 0
-    do i=1,nelem
+    do i=1,n_elements
        if(zones(i) .ne. -999) then
           cpos = cpos+1
           element_map(i) = cpos
@@ -86,7 +86,7 @@ contains
     temp_elements=0
 
     !!rebuild the zones
-    do i=1,nelem
+    do i=1,n_elements
        if(element_map(i) .ne. 0) then
           temp_elements(element_map(i),1) = zones(i)
        end if
@@ -116,32 +116,32 @@ contains
     deallocate(temp_elements)
 
     !rebuild the conductivity file
-    if(allocated(sigma)) then
+    if(allocated(sigma_re)) then
        allocate(temp_nodes(nnew_elements,1))
-       do i=1,nelem
+       do i=1,n_elements
           if(element_map(i) .ne. 0) then
-             temp_nodes(element_map(i),1) = sigma(i)
+             temp_nodes(element_map(i),1) = sigma_re(i)
           end if
        end do
-       deallocate(sigma)
-       allocate(sigma(nnew_elements))
-       sigma = temp_nodes(1:nnew_elements,1)
+       deallocate(sigma_re)
+       allocate(sigma_re(nnew_elements))
+       sigma_re = temp_nodes(1:nnew_elements,1)
        deallocate(temp_nodes)
     end if
 
-    if(allocated(sigmai)) then
+    if(allocated(sigma_im)) then
        allocate(temp_nodes(nnew_elements,1))
-       do i=1,nelem
+       do i=1,n_elements
           if(element_map(i) .ne. 0) then
-             temp_nodes(element_map(i),1) = sigmai(i)
+             temp_nodes(element_map(i),1) = sigma_im(i)
           end if
        end do
-       deallocate(sigmai)
-       allocate(sigmai(nnew_elements))
-       sigmai = temp_nodes(1:nnew_elements,1)
+       deallocate(sigma_im)
+       allocate(sigma_im(nnew_elements))
+       sigma_im = temp_nodes(1:nnew_elements,1)
        deallocate(temp_nodes)
     end if
-    nelem = nnew_elements
+    n_elements = nnew_elements
 
 !!$    open(10,file='temp.1.node',status='replace',action='write')
 !!$    write(10,*) nnodes,3,1,1
@@ -157,7 +157,7 @@ contains
 !!$    end do
 !!$    close(10)
 !!$
-!!$    open(10,file='temp.sig',status='replace',action='write')
+!!$    open(10,file='temp.sigma',status='replace',action='write')
 !!$    write(10,*) nelem,1
 !!$    do i=1,nelem
 !!$       write(10,*) sigma(i)

@@ -31,7 +31,7 @@ contains
     !loop over the conductivity files
     nt = size(tl_cfils(:,1))
     do i=1,nt
-       sigfile = tl_cfils(i,1)
+       sig_filename = tl_cfils(i,1)
        call read_conductivity
        call send_sigma
        if(i_flag) call send_sigmai
@@ -115,9 +115,9 @@ contains
   !_________________________________________________________________
   subroutine mwrite_pots(indx)
     implicit none
-    integer :: dp_flag,pot_flag,npot,o_opt,ist,jflag,indx
+    integer :: resid_flag,pot_flag,npot,o_opt,ist,jflag,indx
     logical :: fcheck
-    character*80 :: dp_file
+    character*80 :: resid_prefix
     character*20 :: fname,jformat
     integer :: i,a,b,j,emin,emax,ra,rb
     integer, dimension(2) :: spack
@@ -125,11 +125,11 @@ contains
     integer ::  status(MPI_STATUS_SIZE)
 
    
-    inquire(file=trim(outfile),exist=fcheck); if(.not.fcheck) goto 10
+    inquire(file=trim(out_file),exist=fcheck); if(.not.fcheck) goto 10
   
-    open(15,file=outfile,status='old',action='read')
-    read(15,*,IOSTAT=ist) dp_flag; if(ist.ne.0) goto 11
-    read(15,*,IOSTAT=ist) dp_file; if(ist.ne.0) goto 12
+    open(15,file=out_file,status='old',action='read')
+    read(15,*,IOSTAT=ist) resid_flag; if(ist.ne.0) goto 11
+    read(15,*,IOSTAT=ist) resid_prefix; if(ist.ne.0) goto 12
     read(15,*,IOSTAT=ist) npot   ; if(ist.ne.0) goto 13
 
     if(npot>0) then
@@ -227,46 +227,46 @@ contains
 10  continue
       open(51,file='e4d.log',status='old',action='write',position='append')
       write(51,*) 
-      write(51,*) ' Cannot find the output options file: ',trim(outfile)
+      write(51,*) ' Cannot find the output options file: ',trim(out_file)
       close(51)
       write(*,*) 
-      write(*,*) ' Cannot find the output options file: ',trim(outfile)
+      write(*,*) ' Cannot find the output options file: ',trim(out_file)
 
       return
       
 11    continue
       open(51,file='e4d.log',status='old',action='write',position='append')
       write(51,*) 
-      write(51,*) ' The was a problem reading the first line in the output file: ',trim(outfile)
+      write(51,*) ' The was a problem reading the first line in the output file: ',trim(out_file)
       close(51)
       write(*,*) 
-      write(*,*) ' There was a problem reading the first line in the output file: ',trim(outfile)
+      write(*,*) ' There was a problem reading the first line in the output file: ',trim(out_file)
       return
 
 12    continue
       open(51,file='e4d.log',status='old',action='write',position='append')
       write(51,*) 
-      write(51,*) 'There was a problem reading the predicted data file name in: ',trim(outfile)
+      write(51,*) 'There was a problem reading the predicted data file name in: ',trim(out_file)
       close(51)
       write(*,*) 
-      write(*,*) 'The was a problem reading the predicted data file in: ',trim(outfile)
+      write(*,*) 'The was a problem reading the predicted data file in: ',trim(out_file)
       return
 
 13    continue
       open(51,file='e4d.log',status='old',action='write',position='append')
       write(51,*) 
-      write(51,*) ' There was a problem reading the number of potential fields to write in: ',trim(outfile)
+      write(51,*) ' There was a problem reading the number of potential fields to write in: ',trim(out_file)
       close(51)
       write(*,*) 
-      write(*,*) ' There was a problem reading the number of potential fields to write in: ',trim(outfile)
+      write(*,*) ' There was a problem reading the number of potential fields to write in: ',trim(out_file)
       return
 
 14    continue
       open(51,file='e4d.log',status='old',action='write',position='append')
-      write(51,*) ' There was a problem reading potential field index: ',i,' in: ',trim(outfile)
+      write(51,*) ' There was a problem reading potential field index: ',i,' in: ',trim(out_file)
       close(51)
       write(*,*)
-      write(*,*) ' There was a problem reading potential field index: ',i,' in: ',trim(outfile)
+      write(*,*) ' There was a problem reading potential field index: ',i,' in: ',trim(out_file)
        deallocate(ipot)
       return
 

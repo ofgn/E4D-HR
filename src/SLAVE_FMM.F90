@@ -174,11 +174,11 @@ module slave_fmm
       implicit none
       
       integer :: i
-      if(allocated(jind)) deallocate(jind)
+      if(allocated(data_assignments)) deallocate(data_assignments)
       if(allocated(sind)) deallocate(sind)
       if(allocated(s_pos)) deallocate(s_pos) 
       allocate(sind(n_rank_fmm-1,2))
-      allocate(jind(n_rank_fmm-1,2))
+      allocate(data_assignments(n_rank_fmm-1,2))
 
       call MPI_BCAST(tns,1,MPI_INTEGER , 0, FMM_COMM, ierr )
       ns=tns
@@ -189,7 +189,7 @@ module slave_fmm
          allocate(rc_pos(nrc,3))
          call MPI_BCAST(rc_pos,3*nrc,MPI_DOUBLE , 0, FMM_COMM, ierr )
       end if
-      call MPI_BCAST(jind,2*(n_rank_fmm-1),MPI_INTEGER , 0, FMM_COMM, ierr )
+      call MPI_BCAST(data_assignments,2*(n_rank_fmm-1),MPI_INTEGER , 0, FMM_COMM, ierr )
       call MPI_BCAST(sind,2*(n_rank_fmm-1),MPI_INTEGER , 0, FMM_COMM, ierr )
       if(fresnel) then
          allocate(frq(tns))
@@ -237,16 +237,16 @@ module slave_fmm
       
     
       !receive elements from master
-      call MPI_BCAST(nelem, 1, MPI_INTEGER, 0,FMM_COMM,ierr)
-      allocate(elements(nelem,4),nbrs(nelem,4))
-      call MPI_BCAST(elements, nelem*4,MPI_INTEGER,0,FMM_COMM,ierr)
-      call MPI_BCAST(nbrs, nelem*4,MPI_INTEGER,0,FMM_COMM,ierr)
+      call MPI_BCAST(n_elements, 1, MPI_INTEGER, 0,FMM_COMM,ierr)
+      allocate(elements(n_elements,4),nbrs(n_elements,4))
+      call MPI_BCAST(elements, n_elements*4,MPI_INTEGER,0,FMM_COMM,ierr)
+      call MPI_BCAST(nbrs, n_elements*4,MPI_INTEGER,0,FMM_COMM,ierr)
 
       !call MPI_BCAST(nfaces, 1, MPI_INTEGER, 0,FMM_COMM,ierr)
       !allocate(faces(nfaces,4))
-      allocate(zones(nelem))
+      allocate(zones(n_elements))
       !call MPI_BCAST(faces, nfaces*4,MPI_INTEGER,0,FMM_COMM,ierr)
-      call MPI_BCAST(zones, nelem,MPI_INTEGER,0,FMM_COMM,ierr)
+      call MPI_BCAST(zones, n_elements,MPI_INTEGER,0,FMM_COMM,ierr)
      
       !receive the assignments
       call receive_dists_fmm
@@ -255,8 +255,8 @@ module slave_fmm
       call mget_source_nodes(stat)
 
       !allocate and receive the use_ele vector
-      allocate(use_ele(nelem))
-      call MPI_BCAST(use_ele,nelem,MPI_LOGICAL,0,FMM_COMM,ierr)
+      allocate(use_ele(n_elements))
+      call MPI_BCAST(use_ele,n_elements,MPI_LOGICAL,0,FMM_COMM,ierr)
       
       !allocate travel time array
       allocate(ttimes(nnodes,my_ns))
@@ -294,43 +294,13 @@ module slave_fmm
 
 
     !__________________________________________________________________
-    subroutine receive_slowness
-      implicit none
-      
-      call MPI_BCAST(nspd, 1, MPI_INTEGER, 0,FMM_COMM,ierr)
-      if(.not.allocated(speed)) allocate(speed(nspd))
-      call MPI_BCAST(speed, nspd,MPI_DOUBLE,0,FMM_COMM,ierr)
-
-    end subroutine receive_slowness
     !__________________________________________________________________
 
-    !__________________________________________________________________
-    subroutine send_ttpred
-      implicit none
-      integer :: i
-
-      call fmm_assemble_data
-      call MPI_SEND(nmy_drows,1,MPI_INTEGER,0,0,FMM_COMM, ierr)
-      call MPI_SEND(my_drows,nmy_drows,MPI_INTEGER,0,0,FMM_COMM,ierr)
-      call MPI_SEND(my_dvals,nmy_drows,MPI_DOUBLE,0,0,FMM_COMM,ierr)
-    
-    end subroutine send_ttpred
+    !_________________________________________________________________
     !__________________________________________________________________
  
     !__________________________________________________________________
-     subroutine send_tt
-       implicit none
-       integer, dimension(2) :: spack
-       integer :: es
 
-       call MPI_BCAST(spack,2,MPI_INTEGER,0,FMM_COMM,ierr)
-
-       if(spack(1)==my_rank_fmm) then
-          es=spack(2)-sind(my_rank_fmm,1) + 1
-          call MPI_SEND(ttimes(:,es),nnodes,MPI_DOUBLE,0,0,FMM_COMM,ierr)
-       end if
-
-     end subroutine send_tt
      !__________________________________________________________________
 
      !__________________________________________________________________
@@ -343,8 +313,8 @@ module slave_fmm
              write(fname,'(A12,I1)') 'sensitivity.',sind(my_rank_fmm,1)+i-1
              write(*,*) 'printing sensitivities to ',fname,sum(Jaco(i,:))
              open(13,file=fname,status='replace',action='write')
-             write(13,*) nelem,1
-             do j=1,nelem
+             write(13,*) n_elements,1
+             do j=1,n_elements
                 write(13,*) Jaco(i,j)
              end do
              close(13)

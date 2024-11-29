@@ -6,7 +6,6 @@ module jacob
   
   
 contains 
-  
 
   !_______________________________________________________________________________
   subroutine build_jaco
@@ -29,13 +28,15 @@ contains
    
     call cpu_time(tt1)
 
-    nj_rows=jind(my_rank,2)-jind(my_rank,1)+1
+    n_data_assigned = data_assignments(my_rank,2) - data_assignments(my_rank,1) + 1
     if(.not. allocated(Jaco)) then
-       allocate(Jaco(nj_rows,nelem))
+       allocate(Jaco(n_data_assigned, n_elements))
     elseif(res_flag .and. allocated(Jaco)) then
        deallocate(Jaco) 
-       allocate(Jaco(nj_rows,nelem))
+       allocate(Jaco(n_data_assigned,n_elements))
     end if
+
+
 
     pa=0; pb=0; pm=0; pn=0
   
@@ -143,7 +144,7 @@ contains
           if((emin .le. b) .and. (emax .ge. b)) rb = i 
           if((emin .le. m) .and. (emax .ge. m)) rm = i
           if((emin .le. n) .and. (emax .ge. n)) rn = i
-          if((jind(i,1) .le. di) .and. (jind(i,2) .ge. di)) mown = i
+          if((data_assignments(i,1) .le. di) .and. (data_assignments(i,2) .ge. di)) mown = i
        end do
        
        if(mown==my_rank) then          
@@ -205,7 +206,7 @@ contains
           end if
           !end if
          
-          my_jrow = di - jind(my_rank,1) + 1
+          my_jrow = di - data_assignments(my_rank,1) + 1
      
           call build_my_jaco(my_jrow,pa-pb,pm-pn)
           call MPI_SEND(my_rank,1,MPI_INTEGER,0,1,E4D_COMM,ierr)
@@ -258,11 +259,12 @@ contains
        n_old=n
 
     end do
+
     
 
     !!turn elements off if necessary
     if(allocated(J_on_off)) then
-       do i=1,nelem
+       do i=1,n_elements
           if(.not. J_on_off(i)) then
              Jaco(:,i)=0
           end if;
@@ -283,7 +285,7 @@ contains
     integer :: js
     
     mcount=0  
-    do j=1,nelem
+    do j=1,n_elements
 
        C2 = 0   
        do k=1,10
@@ -301,13 +303,16 @@ contains
        
        !!Use this for estimating log(delta_sigma)
        if(invi) then
-          Jaco(irow,j) = -sigmai(j)*C2
+          Jaco(irow,j) = -sigma_im(j)*C2
        else
-          Jaco(irow,j) = -sigma(j)*C2
+          Jaco(irow,j) = -sigma_re(j)*C2
        end if
+
+
 
     end do
 
+    
    
   end subroutine build_my_jaco
   !_______________________________________________________________________________

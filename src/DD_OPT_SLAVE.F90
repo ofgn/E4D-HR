@@ -460,7 +460,7 @@ contains
     integer, intent(in) :: a,b,m,n
     integer :: i
     real :: val, Ptest,Ptrue,Pma,Pmb,Pna,Pnb,sdev,numer,denom
-    real, dimension(nelem) :: G
+    real, dimension(n_elements) :: G
     Pma = epots_t(a,m)
     Pmb = epots_t(b,m)
     Pna = epots_t(a,n)
@@ -662,7 +662,7 @@ contains
   subroutine receive_new_jinds
     implicit none
     
-    call MPI_BCAST(jind,2*(n_rank-1),MPI_INTEGER , 0, E4D_COMM, ierr )
+    call MPI_BCAST(data_assignments,2*(n_rank-1),MPI_INTEGER , 0, E4D_COMM, ierr )
     
   end subroutine receive_new_jinds
   !____________________________________________________________________
@@ -830,17 +830,17 @@ contains
     if(allocated(nodes)) deallocate(nodes)
     if(allocated(elements)) deallocate(elements)
     allocate(nodes(nnodes,3))
-    allocate(elements(nelem,4))
-    allocate(dist(nelem),mids(nelem,3))
+    allocate(elements(n_elements,4))
+    allocate(dist(n_elements),mids(n_elements,3))
     call MPI_BCAST(nodes, nnodes*3, MPI_DOUBLE , 0, E4D_COMM, ierr )
-    call MPI_BCAST(elements, nelem*4,MPI_INTEGER,0,E4D_COMM,ierr)
+    call MPI_BCAST(elements, n_elements*4,MPI_INTEGER,0,E4D_COMM,ierr)
     
-    allocate(inv_dist(tne,nelem),evol(nelem))
+    allocate(inv_dist(tne,n_elements),evol(n_elements))
     inv_dist = 0
     evol = 0
 
     !get the midpoints of the elements
-    do i=1,nelem
+    do i=1,n_elements
        do j=1,3
           mids(i,j) = 0.25*sum(nodes(elements(i,:),j))
        end do
@@ -856,7 +856,7 @@ contains
        inv_dist(i,:) = dist**(-1)
     end do
     
-    call MPI_ALLREDUCE(MPI_IN_PLACE,inv_dist,tne*nelem,MPI_DOUBLE,MPI_SUM,SCOMM,ierr)
+    call MPI_ALLREDUCE(MPI_IN_PLACE,inv_dist,tne*n_elements,MPI_DOUBLE,MPI_SUM,SCOMM,ierr)
     
     deallocate(dist)
     deallocate(mids)

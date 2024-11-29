@@ -5,7 +5,7 @@ module mod_res
   use forward
   use input
   use output
-  use report
+  use e4d_report
   use invert
   use mod_con
   use build_amap
@@ -38,7 +38,7 @@ contains
     allocate(rg_rank(ngrp),Sbase(nR_inds),Stest(nR_inds))
     allocate(sused(ngrp))
     allocate(sg_rank(ngrp))
-    allocate(dist(nelem))
+    allocate(dist(n_elements))
     sused=.false. 
     itr=0
     call write_survey(itr)
@@ -211,7 +211,7 @@ contains
     allocate(rg_rank(ngrp),Sbase(nR_inds),Stest(nR_inds))
     allocate(sused(ngrp))
     allocate(sg_rank(ngrp))
-    allocate(dist(nelem))
+    allocate(dist(n_elements))
     
     !!get the baseline survey res values
     bflag=.true.
@@ -249,7 +249,7 @@ contains
     call get_volume
     call compute_mids
     allocate(Rbase(nR_inds),Sbase(nR_inds))
-    allocate(dist(nelem))
+    allocate(dist(n_elements))
 
     write(*,*) ">>> COMPUTING TRUE RESOLUTION AT CONTROL POINTS <<<"
     bflag = .true.
@@ -260,8 +260,8 @@ contains
     call rpcgls
    
     open(23,file='R_pred.txt',action='write',status='replace')
-    write(23,*) nelem
-    do i=1,nelem
+    write(23,*) n_elements
+    do i=1,n_elements
        write(23,*) RD(i)
     end do
     close(23)
@@ -364,7 +364,7 @@ contains
     write(*,*) "STARTING RESOLUTION MATRIX BUILD"
     if(allocated(dk)) deallocate(dk)
     allocate(dk(nm))
-    allocate(vk(nelem),tk(nelem),qk(nelem),RD(nelem))
+    allocate(vk(n_elements),tk(n_elements),qk(n_elements),RD(n_elements))
     tk=0
     qk=0
     dk=0
@@ -375,12 +375,12 @@ contains
     
     xpar = 0
     b = 0
-    sigma = log(sigma)
+    sigma_re = log(sigma_re)
     refsig=log(refsig)
     if(tl_flag .and. tl_ly) sig_not=log(sig_not)
  
-    do i=1,nelem
-       sigma_par(par_map(i))=sigma(i)
+    do i=1,n_elements
+       sigma_par(par_map(i))=sigma_re(i)
        rsigma_par(par_map(i))=refsig(i)
     end do
     
@@ -418,8 +418,8 @@ contains
     recvcounts=0
     displs=0
     do i=1,n_rank-1
-       ind1=jind(i,1)
-       ind2=jind(i,2)
+       ind1=data_assignments(i,1)
+       ind2=data_assignments(i,2)
        nrow = ind2-ind1+1
        displs(i+1)=ind1-1
        recvcounts(i+1)=nrow
@@ -429,7 +429,7 @@ contains
     do k=1,50000
 
        xpar=0
-       do j=1,nelem
+       do j=1,n_elements
           vk(j)=random_normal()
        end do
        call vk_matmul
@@ -438,7 +438,7 @@ contains
        r = b
 
        !!s = matmul(transpose(J),b)
-       s = pmatvec2_dbl(nm,nelem,ncon,ccount,wrows,wcols,Wm,r(1:nm+ncon),beta,npar,par_map,nec,ex_cols,ex_vals)  
+       s = pmatvec2_dbl(nm,n_elements,ncon,ccount,wrows,wcols,Wm,r(1:nm+ncon),beta,npar,par_map,nec,ex_cols,ex_vals)  
        
        p = s
        gamma = dot_product(s,s)
@@ -460,7 +460,7 @@ contains
           end if
           
           !call cpu_time(ce); write(*,*)"      executing pmatvec1 at:",(ce-cs)/60,' minutes'
-          q = pmatvec1_dbl(nm,nelem,ncon,ccount,wrows,wcols,Wm,p,beta,npar,par_map,nec,ex_cols,ex_vals) 
+          q = pmatvec1_dbl(nm,n_elements,ncon,ccount,wrows,wcols,Wm,p,beta,npar,par_map,nec,ex_cols,ex_vals) 
           !call cpu_time(ce); write(*,*)"      done with pmatvec1 at:",(ce-cs)/60,' minutes'
           
           delta = dot_product(q,q) 
@@ -479,7 +479,7 @@ contains
           r = r - alpha*q
           
           !call cpu_time(ce); write(*,*)"      executing pmatvec2 at:",(ce-cs)/60,' minutes'
-          s = pmatvec2_dbl(nm,nelem,ncon,ccount,wrows,wcols,Wm,r,beta,npar,par_map,nec,ex_cols,ex_vals)
+          s = pmatvec2_dbl(nm,n_elements,ncon,ccount,wrows,wcols,Wm,r,beta,npar,par_map,nec,ex_cols,ex_vals)
           !call cpu_time(ce); write(*,*)"      done with pmatvec2 at:",(ce-cs)/60,' minutes'
           
           norms = sqrt(dot_product(s,s))
@@ -508,7 +508,7 @@ contains
           end if
        end do
        
-       do j=1,nelem
+       do j=1,n_elements
           tk(j)=tk(j)+real(xpar(par_map(j)))*vk(j)
           qk(j)=qk(j)+vk(j)*vk(j)
           RD(j)=tk(j)/qk(j)
@@ -524,7 +524,7 @@ contains
     !   write(10,*) tk(j),qk(j),RD(j)
     !end do
 
-    sigma = exp(sigma)
+    sigma_re = exp(sigma_re)
     refsig=exp(refsig)
     if(tl_flag .and. tl_ly) sig_not=exp(sig_not)
  
@@ -552,7 +552,7 @@ contains
     if(.not.allocated(Rres)) allocate(Rres(nR_inds))
     if(allocated(dk)) deallocate(dk)
     allocate(dk(nm))
-    allocate(sup(nelem))
+    allocate(sup(n_elements))
     call cpu_time(Cstart)
     cs=Cstart
     call send_command(20)
@@ -563,12 +563,12 @@ contains
     
     xpar = 0
     b = 0
-    sigma = log(sigma)
+    sigma_re = log(sigma_re)
     refsig=log(refsig)
     if(tl_flag .and. tl_ly) sig_not=log(sig_not)
  
-    do i=1,nelem
-       sigma_par(par_map(i))=sigma(i)
+    do i=1,n_elements
+       sigma_par(par_map(i))=sigma_re(i)
        rsigma_par(par_map(i))=refsig(i)
     end do
     
@@ -610,8 +610,8 @@ contains
     recvcounts=0
     displs=0
     do i=1,n_rank-1
-       ind1=jind(i,1)
-       ind2=jind(i,2)
+       ind1=data_assignments(i,1)
+       ind2=data_assignments(i,2)
        nrow = ind2-ind1+1
        displs(i+1)=ind1-1
        recvcounts(i+1)=nrow
@@ -629,7 +629,7 @@ contains
        r = b
 
        !!s = matmul(transpose(J),b)
-       s = pmatvec2_dbl(nm,nelem,ncon,ccount,wrows,wcols,Wm,r(1:nm+ncon),beta,npar,par_map,nec,ex_cols,ex_vals)  
+       s = pmatvec2_dbl(nm,n_elements,ncon,ccount,wrows,wcols,Wm,r(1:nm+ncon),beta,npar,par_map,nec,ex_cols,ex_vals)  
        
        p = s
        gamma = dot_product(s,s)
@@ -652,7 +652,7 @@ contains
           end if
           
           !call cpu_time(ce); write(*,*)"      executing pmatvec1 at:",(ce-cs)/60,' minutes'
-          q = pmatvec1_dbl(nm,nelem,ncon,ccount,wrows,wcols,Wm,p,beta,npar,par_map,nec,ex_cols,ex_vals) 
+          q = pmatvec1_dbl(nm,n_elements,ncon,ccount,wrows,wcols,Wm,p,beta,npar,par_map,nec,ex_cols,ex_vals) 
           !call cpu_time(ce); write(*,*)"      done with pmatvec1 at:",(ce-cs)/60,' minutes'
        
           delta = dot_product(q,q) 
@@ -671,7 +671,7 @@ contains
           r = r - alpha*q
           
           !call cpu_time(ce); write(*,*)"      executing pmatvec2 at:",(ce-cs)/60,' minutes'
-          s = pmatvec2_dbl(nm,nelem,ncon,ccount,wrows,wcols,Wm,r,beta,npar,par_map,nec,ex_cols,ex_vals)
+          s = pmatvec2_dbl(nm,n_elements,ncon,ccount,wrows,wcols,Wm,r,beta,npar,par_map,nec,ex_cols,ex_vals)
           !call cpu_time(ce); write(*,*)"      done with pmatvec2 at:",(ce-cs)/60,' minutes'
           
           norms = sqrt(dot_product(s,s))
@@ -701,7 +701,7 @@ contains
        end do
        
 
-       do i=1,nelem
+       do i=1,n_elements
           sup(i)=xpar(par_map(i))
        end do
       
@@ -729,7 +729,7 @@ contains
     end do
     
 
-    sigma = exp(sigma)
+    sigma_re = exp(sigma_re)
     refsig=exp(refsig)
     if(tl_flag .and. tl_ly) sig_not=exp(sig_not)
  
@@ -753,11 +753,11 @@ contains
     write(fname,'(A4,I0,A4)') "psf_",k,".txt"
     write(*,*) fname
     open(21,file=trim(fname),action='write',status='replace')
-    write(21,*) nelem
-    C=nelem*(sum(vlm*sqrt(sig_up**2)))
+    write(21,*) n_elements
+    C=n_elements*(sum(vlm*sqrt(sig_up**2)))
     !C=nelem*(sum(sig_up**2))
 
-    do i=1,nelem
+    do i=1,n_elements
        write(21,*)  vlm(i)*sqrt(dist(i))*sqrt(sig_up(i)**2)/C
        !write(21,*)  sqrt(dist(i))*sqrt(sig_up(i)**2)/(C*vlm(i))
     end do
@@ -773,7 +773,7 @@ contains
     real :: dummy
 
     call send_command(14)
-    call MPI_BCAST(vk,nelem,MPI_DOUBLE,0,E4D_COMM,ierr)
+    call MPI_BCAST(vk,n_elements,MPI_DOUBLE,0,E4D_COMM,ierr)
     call MPI_GATHERV(dummy,0,MPI_DOUBLE,dk,recvcounts,displs,MPI_DOUBLE,0,E4D_COMM,ierr)
     return
 
@@ -804,15 +804,15 @@ contains
 
     open(51,file='e4d.log',status='old',action='write',position='append')
     open(10,file=efile,status='old',action='read')   
-    read(10,*,IOSTAT=ios) ne
-    if(ios .ne. 0) goto 1007
+    read(10,*,IOSTAT=io_stat) ne
+    if(io_stat .ne. 0) goto 1007
     write(51,*) "NUMBER OF ELECTRODE LOCATIONS = ",ne
     
     
     allocate(e_pos(ne,4))
     do i=1,ne
-       read(10,*,IOSTAT=ios) junk,etmp
-       if(ios .ne. 0) goto 1008
+       read(10,*,IOSTAT=io_stat) junk,etmp
+       if(io_stat .ne. 0) goto 1008
        if(junk>ne) then
           write(51,*) 'ELECTRODE ',junk,' IS GREATER THAN THE NUMBER OF ELLECTRODES ',ne
           close(51)
@@ -826,8 +826,8 @@ contains
     open(51,file='e4d.log',status='old',action='write',position='append')
     if(mode > 1) then
        open(21,file='trans.txt',status='old')
-       read(21,*,IOSTAT=ios) xorig,yorig,zorig
-       if(ios .ne. 0) goto 1009
+       read(21,*,IOSTAT=io_stat) xorig,yorig,zorig
+       if(io_stat .ne. 0) goto 1009
        close(21)
        write(51,*) 'TRANSLATING ELECTRODES'
        e_pos(:,1) = e_pos(:,1)-xorig
@@ -838,8 +838,8 @@ contains
     
     !!Read in the survey
     open(51,file='e4d.log',status='old',action='write',position='append')
-    read(10,*,IOSTAT=ios) nm,n_add,ntot,ropt
-    if(ios .ne. 0) goto 1010
+    read(10,*,IOSTAT=io_stat) nm,n_add,ntot,ropt
+    if(io_stat .ne. 0) goto 1010
     if(ntot>=nm) goto 1015
     if(ropt == 2) then
        use_R = .true.
@@ -852,8 +852,8 @@ contains
     if(i_flag) then
        allocate(dobsi(nm),Wd_alli(nm))
        do i=1,nm
-          read(10,*,IOSTAT=ios) junk,s_conf_all(i,1:4),dobs(i),Wd_all(i),dobsi(i),Wd_alli(i),mgrp(i)
-          if(ios .ne. 0) goto 1011
+          read(10,*,IOSTAT=io_stat) junk,s_conf_all(i,1:4),dobs(i),Wd_all(i),dobsi(i),Wd_alli(i),mgrp(i)
+          if(io_stat .ne. 0) goto 1011
           if(Wd_all(i) <= 0 .or. Wd_alli(i) <= 0) then
              write(*,*) "NEGATIVE OR ZERO STD DEVIATION AT DATUM ",i
              write(*,*) "SETTING DEVIATION TO VERY LARGE "
@@ -873,8 +873,8 @@ contains
        
     else
        do i=1,nm
-          read(10,*,IOSTAT=ios) junk,s_conf_all(i,1:4),dobs(i),Wd_all(i),mgrp(i)
-          if(ios .ne. 0) goto 1011
+          read(10,*,IOSTAT=io_stat) junk,s_conf_all(i,1:4),dobs(i),Wd_all(i),mgrp(i)
+          if(io_stat .ne. 0) goto 1011
           if(Wd_all(i) <= 0) then
              write(*,*) "NEGATIVE OR ZERO STD DEVIATION AT DATUM ",i
              write(*,*) "SETTING DEVIATION TO VERY LARGE "
@@ -932,8 +932,8 @@ contains
       end do
    end if
 
-   read(10,*,IOSTAT=ios) nR_inds
-   if(ios .ne.0) goto 1012
+   read(10,*,IOSTAT=io_stat) nR_inds
+   if(io_stat .ne.0) goto 1012
    if(nR_inds<1 .or. n_add<1) goto 1013
    
    !open(51,file='e4d.log',status='old',action='write',position='append')
@@ -941,8 +941,8 @@ contains
 
    allocate(R_pts(nR_inds,3),R_inds(nR_inds))
    do i=1,nR_inds
-      read(10,*,IOSTAT=ios) junk,R_pts(i,1),R_pts(i,2),R_pts(i,3)
-      if(ios .ne. 0) goto 1014
+      read(10,*,IOSTAT=io_stat) junk,R_pts(i,1),R_pts(i,2),R_pts(i,3)
+      if(io_stat .ne. 0) goto 1014
    end do
    close(10)
 
@@ -1026,7 +1026,7 @@ contains
   subroutine get_cpts
     implicit none
     integer :: i,ii
-    real, dimension(nelem) :: dist
+    real, dimension(n_elements) :: dist
     integer, dimension(1) :: indx
   
   
@@ -1055,9 +1055,9 @@ contains
     integer :: i
 
     if(allocated(mids)) deallocate(mids)
-    allocate(mids(nelem,3))
+    allocate(mids(n_elements,3))
 
-    do i=1,nelem
+    do i=1,n_elements
        mids(i,1) = 0.25*sum(nodes(elements(i,1:4),1))
        mids(i,2) = 0.25*sum(nodes(elements(i,1:4),2))
        mids(i,3) = 0.25*sum(nodes(elements(i,1:4),3))
@@ -1153,8 +1153,8 @@ contains
     integer :: kk
     real :: x1,y1,z1,x2,y2,z2,x3,y3,z3,x4,y4,z4
  
-    allocate(vlm(nelem))
-    do kk=1,nelem
+    allocate(vlm(n_elements))
+    do kk=1,n_elements
        
        !!get the 4 nodes for this element 
        x1 = nodes(elements(kk,1),1)

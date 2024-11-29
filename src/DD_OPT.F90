@@ -71,7 +71,7 @@ contains
     !!send the starting sigma value and instruct the slave
     !!to compute the poles
     !sigma=dd_sig_start
-    sigfile = dd_sigfile
+    sig_filename = dd_sigfile
     call read_conductivity
     call send_sigma
     call send_command(3)
@@ -165,10 +165,10 @@ contains
           call send_sigmai
        end if
        call send_command(3)
-       call write_sigma
+       call export_real_conductivity_model
        
        !output the conductivity for this iteration
-       !call write_sigma
+       !call export_model_dc
        call send_command(5)
        !execute a forward run
        call run_forward 
@@ -205,14 +205,14 @@ contains
      iter=iter+1 
      call nreport(4)
      call nreport(56)
-     call sadjust(1) 
+     call adjust_model(1) 
      call send_sigma
      if(i_flag) then
         call update_sigi
         call send_sigmai
      end if
      call send_command(3)
-     call write_sigma
+     call export_real_conductivity_model
      call send_command(5)
      call run_forward 
      
@@ -301,28 +301,28 @@ contains
 
     call send_command(1006)
     !!Build jaco assignments
-    jind = 0
+    data_assignments = 0
     if(nm < (n_rank-1)) then
        do i=1,nm
-          jind(i,1:2)=i
+          data_assignments(i,1:2)=i
        end do
     else
        neven = nm/(n_rank-1)
        nextra = nm - neven*(n_rank-1)
        
-       jind=0
+       data_assignments=0
        if(neven > 0) then
           ce = 1
           do i=1,n_rank-1-nextra
-             jind(i,1) = ce
-             jind(i,2) = ce+neven-1
+             data_assignments(i,1) = ce
+             data_assignments(i,2) = ce+neven-1
              ce = ce+neven
           end do
           
           if(nextra > 0) then
              do i=n_rank-nextra,n_rank-1    
-                jind(i,1) = ce
-                jind(i,2) = ce+neven
+                data_assignments(i,1) = ce
+                data_assignments(i,2) = ce+neven
                 ce=ce+neven+1
              end do
           end if
@@ -330,7 +330,7 @@ contains
     end if
    
     !!send assignments
-    call MPI_BCAST(jind,2*(n_rank-1),MPI_INTEGER , 0, E4D_COMM, ierr )
+    call MPI_BCAST(data_assignments,2*(n_rank-1),MPI_INTEGER , 0, E4D_COMM, ierr )
     call nreport(64)
   end subroutine build_send_jinds
   !__________________________________________________________________
@@ -680,7 +680,7 @@ contains
     end do   
     close(25)
 
-!!$    write(sfile,'(A,I0,A)') 'opt_survey_',it,'.sig'
+!!$    write(sfile,'(A,I0,A)') 'opt_survey_',it,'.sigma'
 !!$    open(25,file=trim(sfile),status='replace',action='write')
 !!$    write(25,*) nelem,1
 !!$    do i=1,nelem
@@ -697,11 +697,11 @@ contains
     integer :: it,i,j
     character*40 :: sfile
     
-    write(sfile,'(A,I0,A)') 'opt_survey_',it,'.sig'
+    write(sfile,'(A,I0,A)') 'opt_survey_',it,'.sigma'
     open(25,file=trim(sfile),status='replace',action='write')
-    write(25,*) nelem,1
-    do i=1,nelem
-       write(25,*) sigma(i)
+    write(25,*) n_elements,1
+    do i=1,n_elements
+       write(25,*) sigma_re(i)
     end do
     close(25)
   end subroutine write_sigma_dd
