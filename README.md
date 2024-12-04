@@ -1,4 +1,4 @@
-# E4D-HR: Enhanced Geophysical Modelling and Inversion
+# E4D-HR
 
 E4D-HR is a fork of **E4D**, a 3D geophysical modelling and inversion tool originally developed by PNNL. E4D-HR includes modifications targeting mineral exploration use cases, quality-of-life improvements, and critical bug fixes. **E4D** is a 3D geophysical modeling and inversion code designed for subsurface imaging using Direct Current Resistivity (DCR) and Induced Polarisation (IP) methods.
 
