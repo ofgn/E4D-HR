@@ -46,7 +46,7 @@ For more information about ExploreGeo, visit their [website](https://www.explore
 E4D-HR supports the following platforms:
 
 - **Ubuntu**: 20.04 (Focal Fossa), 22.04 (Jammy Jellyfish), 24.04 (Noble Numbat)
-- **Windows**: Windows 10 (Version 1903 or later), Windows 11
+- **WSL2**: Windows 10 (Version 1903 or later), Windows 11
 
 ---
 
