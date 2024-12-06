@@ -78,7 +78,7 @@ See the E4D-HR user guide for information regarding manual installation.
 
 ## Contributing
 
-E4D-HR is maintained by [ExploreGeo](https://www.exploregeo.com.au/), a consulting group specialising in geophysical services tailored to the minerals exploration industry.
+E4D-HR is maintained by [ExploreGeo](https://www.exploregeo.com.au/), a consulting group specialising in geophysical services in the minerals exploration industry.
 
 <p align="center">
   <img src="https://www.exploregeo.com.au/images/exploregeo/EG_sign.png" alt="EG_signt" />
