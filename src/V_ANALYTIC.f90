@@ -115,7 +115,19 @@ module v_analytic
         end if
 
         call get_level()
+
         allocate(app_sigma(nm))
+
+        ! Calculate the geometric factor and apparent conductivity for each measurement
+        ! Update the minimum and maximum apparent conductivities
+        do i = 1, nm
+            call get_gf(gfam, s_conf(i, 1), s_conf(i, 3))
+            call get_gf(gfan, s_conf(i, 1), s_conf(i, 4))
+            call get_gf(gfbm, s_conf(i, 2), s_conf(i, 3))
+            call get_gf(gfbn, s_conf(i, 2), s_conf(i, 4))
+            geometric_factor = (gfam - gfan - (gfbm - gfbn)) / (4.0d0 * pi)
+            app_sigma(i) = geometric_factor / dobs(i)
+        end do
 
         ! Calculate the weighted mean apparent conductivity
         min_app_sigma = minval(pack(app_sigma, app_sigma > 0.0d0))
