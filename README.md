@@ -1,7 +1,7 @@
 
 # E4D-HR
 
-E4D-HR is a fork of [E4D](https://www.pnnl.gov/projects/e4d), a 3D geophysical modelling and inversion tool originally developed by PNNL. This project continues the development of E4D, introducing modifications tailored towards mineral exploration use cases. E4D is designed for subsurface imaging, using direct current resistivity and induced polarisation methods for advanced geophysical modelling and inversion.
+E4D-HR is a fork of [E4D](https://www.pnnl.gov/projects/e4d), a 3D geophysical modelling and inversion tool originally developed by PNNL. This project continues the development of E4D, introducing modifications tailored towards mineral exploration use cases. E4D is designed for subsurface imaging, using direct current resistivity and induced polarisation methods for geophysical modelling and inversion.
 
 ---
 
