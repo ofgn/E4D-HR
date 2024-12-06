@@ -67,7 +67,4 @@ Contributions to E4D-HR are welcomed! To contribute, please fork the repository,
 
 ## License
 
-See the [LICENSE](./LICENSE) file for details.
-
---
-
+[AGPLv3](./LICENCE)
