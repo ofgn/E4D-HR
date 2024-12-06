@@ -86,8 +86,3 @@ E4D-HR is maintained by [ExploreGeo](https://www.exploregeo.com.au/), a consulti
 
 Contributions to E4D-HR are welcomed! To contribute, please fork the repository, make your changes, and submit a pull request. For any questions or suggestions, feel free to open an issue on GitHub.
 
----
-
-## License
-
-[AGPLv3](./LICENCE)
