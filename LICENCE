@@ -1,0 +1,43 @@
+# E4D-HR Licence
+
+This software is based on **E4D**, Copyright © 2014, Battelle Memorial Institute.
+
+---
+
+## Licence Terms
+
+This software, including modifications made for **E4D-HR**, is licensed under the **GNU Affero General Public Licence (AGPLv3)**.  
+You may use, modify, and redistribute this software under the terms of the AGPLv3.  
+A copy of the AGPLv3 licence is included with this distribution or can be found at:  
+[https://www.gnu.org/licenses/agpl-3.0.en.html](https://www.gnu.org/licenses/agpl-3.0.en.html).
+
+---
+
+## Requirements for Redistribution
+
+Redistributions must retain the following:
+
+1. The original copyright notice:
+   ```
+   Copyright © 2014, Battelle Memorial Institute.
+   ```
+
+2. The following citation in any derivative work or publication using this software:
+   ```
+   Johnson, T. C., R. J. Versteeg, A. Ward, F. D. Day-Lewis, and A. Revil (2010), 
+   Improved hydrogeophysical characterization and monitoring through parallel modeling 
+   and inversion of time-domain resistivity and induced polarization data, Geophysics, 
+   75(4), Wa27-Wa41.
+
+   Johnson TC, and DM Wellman. 2015. "Accurate modeling and inversion of electrical 
+   resistivity data in the presence of metallic infrastructure with known location and 
+   dimension." Geophysical Journal International 202(2):1096-1108. doi:10.1093/gji/ggv206.
+   ```
+
+---
+
+## Disclaimer
+
+This software is provided **"AS IS"**, without warranty of any kind, express or implied,  
+including but not limited to warranties of merchantability or fitness for a particular purpose.  
+See the AGPLv3 licence for full details.

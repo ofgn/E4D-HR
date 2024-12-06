@@ -9,10 +9,10 @@ PETSC_INCLUDES = ${PETSC_FC_INCLUDES}
 objects = utility.o vtk.o \
 	VARS.o DISTRIBUTOR.o READ_INP.o REORDER_MESH.o \
 	BUILD_AMAP.o \
-	JACOBIAN.o mat_inv.o FORWARD.o ASSEMBLE.o mesh.o \
+	JACOBIAN.o mat_inv.o FORWARD.o ASSEMBLE.o BuildMesh.f90.o \
 	DD_OPT_SLAVE.o SLAVE.o \
 	BUILD_MODEL_CONSTRAINTS.o OBJ.o\
-	report.o output.o MASTER.o  \
+	REPORT.o Output.o MASTER.o  \
 	Multi_Forward.o INVERT.o \
 	DD_OPT.o V_ANALYTIC.o E4D.o
 
@@ -49,8 +49,8 @@ Multi_Forward.o : Multi_Forward.F90
 ASSEMBLE.o : ASSEMBLE.F90
 	$(FC) $(FFLAGS) -r8 -heap-arrays -c ASSEMBLE.F90 -o ASSEMBLE.o ${PETSC_FC_INCLUDES}
 
-output.o : output.f90
-	$(FC) $(FFLAGS) -r8 -c output.f90 -o output.o ${PETSC_INCLUDES}
+Output.o : Output.f90
+	$(FC) $(FFLAGS) -r8 -c Output.f90 -o Output.o ${PETSC_INCLUDES}
 
 BUILD_MODEL_CONSTRAINTS.o : BUILD_MODEL_CONSTRAINTS.f90
 	$(FC) $(FFLAGS) -r8 -heap-arrays -c BUILD_MODEL_CONSTRAINTS.f90 -o BUILD_MODEL_CONSTRAINTS.o ${PETSC_INCLUDES}
@@ -58,8 +58,8 @@ BUILD_MODEL_CONSTRAINTS.o : BUILD_MODEL_CONSTRAINTS.f90
 OBJ.o : OBJ.f90
 	$(FC) $(FFLAGS) -r8 -heap-arrays -c OBJ.f90 -o OBJ.o ${PETSC_INCLUDES}
 
-report.o : report.f90
-	$(FC) $(FFLAGS) -r8 -c report.f90 -o report.o ${PETSC_INCLUDES}
+REPORT.o : REPORT.f90
+	$(FC) $(FFLAGS) -r8 -c REPORT.f90 -o REPORT.o ${PETSC_INCLUDES}
 
 JACOBIAN.o : JACOBIAN.F90
 	$(FC) $(FFLAGS) -r8 -heap-arrays -c JACOBIAN.F90 -o JACOBIAN.o ${PETSC_INCLUDES}
@@ -67,8 +67,8 @@ JACOBIAN.o : JACOBIAN.F90
 INVERT.o : INVERT.F90
 	$(FC) $(FFLAGS) -r8 -heap-arrays -c INVERT.F90 -o INVERT.o ${PETSC_INCLUDES}
 
-mesh.o : mesh.f90
-	$(FC) $(FFLAGS) -r8 -heap-arrays -c mesh.f90 -o mesh.o ${PETSC_INCLUDES}
+BuildMesh.f90.o : BuildMesh.f90
+	$(FC) $(FFLAGS) -r8 -heap-arrays -c BuildMesh.f90 -o BuildMesh.f90.o ${PETSC_INCLUDES}
 
 V_ANALYTIC.o : V_ANALYTIC.f90
 	$(FC) $(FFLAGS) -r8 -heap-arrays -c V_ANALYTIC.f90 -o V_ANALYTIC.o ${PETSC_INCLUDES}
