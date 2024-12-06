@@ -11,41 +11,64 @@ E4D-HR is a fork of [E4D](https://www.pnnl.gov/projects/e4d), a 3D geophysical m
 
 E4D-HR is compatible with the following Linux distributions and Windows systems that support WSL2 (Windows Subsystem for Linux):
 
-- **Linux**: Ubuntu 20.04, 22.04, and 24.04
+- **Linux**: Ubuntu 22.04, Ubuntu 24.04, Debian 11, Debian 12
 - **Windows (WSL2)**: Windows 10 (Version 1903 or later), Windows 11
 
-### Required Software
+### Dependencies
 
 Ensure the following software dependencies are installed:
 
-- **Intel oneAPI Base Toolkit**: Version 2024.2.0 or later
-- **Intel HPC Toolkit**: Version 2024.2.0 or later
-- **build-essential** (for Ubuntu and Debian):
+- [Intel® Fortran Essentials](https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit-download.html?packages=fortran-essentials&fortran-essentials-os=linux&fortran-essentials-lin=offline)
+
+  Subset of Intel® oneAPI HPC toolkit
+  
+- [Intel® C++ Essentials](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html?packages=cpp-essentials&cpp-essentials-os=linux&cpp-essentials-lin=offline)
+
+  Subset of Intel® oneAPI Base
+  
+- [build-essential](https://packages.ubuntu.com/oracular/build-essential)
+  
+  Install through APT
   ```bash
-  sudo apt-get update && sudo apt-get install build-essential
+  sudo apt-get update
+  sudo apt-get install build-essential
   ```
 
-### Downloading E4D-HR
+### Download
 
 1. Visit the [E4D-HR GitHub repository](https://github.com/ofgn/E4D-HR).
+   
 2. Click the **Code** button on the repository page.
+   
 3. Choose one of the following methods:
+   
+   - Download the repository as a ZIP file and extract it to your desired directory.
+     
    - Clone the repository with Git:
+     
      ```bash
      git clone https://github.com/ofgn/E4D-HR.git
      ```
-   - Download the repository as a ZIP file and extract it to your desired directory.
+   
 
 ### Automatic Installation
 
 To automatically install E4D-HR, use the provided `install.py` script. This script handles the setup of dependencies and the compilation of E4D-HR.
 
-1. Ensure the Intel MKL environment variables are configured.
-2. Navigate to the directory containing the `install.py` script.
-3. Run the script:
+1. Ensure the Intel oneAPI environment variables environment variables are configured.
+
+   [Use the setvars and oneapi-vars Scripts with Linux](https://www.intel.com/content/www/us/en/docs/oneapi/programming-guide/2025-0/use-the-setvars-and-oneapi-vars-scripts-with-linux.html#HOW-TO-RUN)
+
+   ```bash
+     source <oneapi-dir>/setvars.sh
+     ```
+   
+3. Navigate to the E4D-HR directory containing the `install.py` script.
+   
+4. Run the script:
    ```python3 install.py```
 
-The script will automatically handle dependency installation and E4D compilation, prompting as needed.
+The script will build E4D-HR and third party libraries, prompting as needed.
 
 ### Manual Installation
 
