@@ -81,7 +81,9 @@ See the E4D-HR user guide for information regarding manual installation.
 E4D-HR is maintained by [ExploreGeo](https://www.exploregeo.com.au/), a consulting group specialising in geophysical services in the minerals exploration industry.
 
 <p align="center">
-  <img src="https://www.exploregeo.com.au/images/exploregeo/EG_sign.png" alt="EG_signt" />
+  <a href="https://www.exploregeo.com.au" target="_blank">
+    <img src="https://www.exploregeo.com.au/images/exploregeo/EG_sign.png" alt="EG_sign" />
+  </a>
 </p>
 
 Contributions to E4D-HR are welcomed! To contribute, please fork the repository, make your changes, and submit a pull request. For any questions or suggestions, feel free to open an issue on GitHub.
