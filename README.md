@@ -24,7 +24,7 @@ Ensure the following software dependencies are installed:
   
 - [Intel® C++ Essentials](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html?packages=cpp-essentials&cpp-essentials-os=linux&cpp-essentials-lin=offline)
 
-  Subset of Intel® oneAPI Base
+  Subset of Intel® oneAPI Base toolkit
   
 - [build-essential](https://packages.ubuntu.com/oracular/build-essential)
   
