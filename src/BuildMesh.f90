@@ -18,7 +18,7 @@ contains
         implicit none
 
         logical :: i_flag
-     integer :: m, d1, d2, d3, el1, el2, el3, el4, el5, i, j, k, tcount, nedge, ecount, bv, ios, nsp2, ii, fstat
+        integer :: m, d1, d2, d3, el1, el2, el3, el4, el5, i, j, k, tcount, nedge, ecount, bv, ios, nsp2, ii, fstat
         integer :: n_points, count, npre, nplc, ns_points, n_surfac, dum1, dum2, dum3, ncplc, splc_count, nedge0, n2pts
         integer :: pt1, pt2, tetflag, vtk_flag, nh, nz, n, nedge_seq, nedge_flag, writit
         integer, dimension(:), allocatable ::  nc_plc, edge_flag, edge_seq, tflag, tf2, np_bounds
@@ -682,14 +682,19 @@ contains
         inquire (file=cfg_filename(1:npre)//'1.neigh', exist=file_exists)
         if (file_exists) call system('rm '//cfg_filename(1:npre)//'1.neigh')
 
-    !!CALL TETGEN TO BUILD THE MESH
+        ! Call TetGen
+        ! (ofgn - 11/12/24): Added additional TetGen command line switches
         write (*, *) "    CALLING TETGEN         "
         if (nz > 0) then
-            write (*, *) trim(tetcom)//" -pnq"//trim(qual)//"a"//trim(max_vol)//"aAA"//" "//trim(cfg_filename)
-            call system(trim(tetcom)//" -pnq"//trim(qual)//"a"//trim(max_vol)//"aAA"//"         "//trim(cfg_filename))
+            write (*, *) trim(tetcom) // " -pnnqefV" // trim(qual) // "a" // &
+                trim(max_vol) // "aAA" // " " // trim(cfg_filename)
+            call system(trim(tetcom)//" -pnnqefV" // trim(qual) // "a" // &
+                trim(max_vol) // "aAA" // "         " // trim(cfg_filename))
         else
-            write (*, *) trim(tetcom)//" -pnq"//trim(qual)//"a"//trim(max_vol)//"AA"//" "//trim(cfg_filename)
-            call system(trim(tetcom)//" -pnq"//trim(qual)//"a"//trim(max_vol)//"AA"//"         "//trim(cfg_filename))
+            write (*, *) trim(tetcom) // " -pnnqefV" // trim(qual) // "a" // &
+                trim(max_vol) //"AA" // " " // trim(cfg_filename)
+            call system(trim(tetcom) //" -pnnqefV" // trim(qual) // "a" // &
+                trim(max_vol)// "AA" // "         " // trim(cfg_filename))
         end if
         !call system('rm surface.*')
 

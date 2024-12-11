@@ -93,4 +93,4 @@ vtk.o : vtk.F90
 
 .PHONY: clean
 clean :
-	rm -f *.o *.sig e4d *~
+	rm -f *.o *.mod e4d *~
