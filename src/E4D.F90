@@ -89,8 +89,8 @@ program main
     my_wrank = my_rank
     n_wrank = n_rank
 
-  !!read command line arguments and distribute the processors
-  !!accordingly
+    !!read command line arguments and distribute the processors
+    !!accordingly
     call distribute
 
     !start the slave processes
@@ -140,7 +140,7 @@ program main
     end if
 
     if (mode == 0) then
-     !! test read on input files specified in e4d.inp
+        !! test read on input files specified in e4d.inp
         ! in read_inp
         call check_files
         if (cfg_flag) then
@@ -448,12 +448,12 @@ contains
     !____________________________________________________________________
     subroutine complex_inv
         !________________________________________________________________________
-    !! Author: Tim Johnson
-    !!
-    !! email: tj@pnnl.gov
-    !!
-    !! Description: This subroutine inverts the complex conductivity data
-    !!
+        !! Author: Tim Johnson
+        !!
+        !! email: tj@pnnl.gov
+        !!
+        !! Description: This subroutine inverts the complex conductivity data
+        !!
         !_________________________________________________________________________
         implicit none
 
@@ -527,12 +527,12 @@ contains
     !____________________________________________________________________
     subroutine time_lapse_1
         !________________________________________________________________________
-    !! Author: Tim Johnson
-    !!
-    !! email: tj@pnnl.gov
-    !!
-    !! Description: This subroutine executes the time-lapse inversion
-    !!
+        !! Author: Tim Johnson
+        !!
+        !! email: tj@pnnl.gov
+        !!
+        !! Description: This subroutine executes the time-lapse inversion
+        !!
         !_________________________________________________________________________
         implicit none
 
@@ -549,7 +549,7 @@ contains
         !set the time lapse flag to true
         tl_flag = .true.
 
-    !!iterate over the survey files
+        !!iterate over the survey files
         if (rt_flag) ntl = 1e6
         do i_tl = 1, ntl
 
@@ -601,7 +601,7 @@ contains
             call write_sigiter
             call nreport(1)
 
-       !!these are the outer iterations for this data set
+            !!these are the outer iterations for this data set
             !if(rt_flag) con_flag = .false.
             do while (.not. con_flag)
                 iter = iter + 1
@@ -650,7 +650,7 @@ contains
                 call nreport(52)
                 call nreport(53)
 
-       !!final solution adjustment
+                !!final solution adjustment
                 call adjust_model(2)
                 call send_sigma
 
@@ -701,12 +701,12 @@ contains
     subroutine beta_line_search
 
         !________________________________________________________________________
-    !! Author: Tim Johnson
-    !!
-    !! email: tj@pnnl.gov
-    !!
-    !! Description: This subroutine conducts a line search on beta. It is
-    !!              currently not working, and is not available for use.
+        !! Author: Tim Johnson
+        !!
+        !! email: tj@pnnl.gov
+        !!
+        !! Description: This subroutine conducts a line search on beta. It is
+        !!              currently not working, and is not available for use.
         !_________________________________________________________________________
         implicit none
 
