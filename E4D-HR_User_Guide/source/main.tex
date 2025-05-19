@@ -8,6 +8,7 @@
 \usepackage{titlesec}
 \usepackage{tocloft}
 \usepackage{geometry}
+\usepackage{hyperref}
 
 % Reduce margins
 \geometry{
@@ -33,13 +34,14 @@
 
 
 \title{E4D-HR User Guide}
-\date{}
+\author{ExploreGeo}
+\date{\today}
 
 \begin{document}
 
 \maketitle
 
-
+\newpage
 
 \tableofcontents
 
@@ -54,13 +56,166 @@ This document is intended to guide geophysicists, who are familiar with DCR and 
 \section{Installation}
 
 \subsection{System Requirements}
-To be completed.
+
+E4D-HR is compatible with the following Linux distributions. Windows users with versions that support WSL2 (Windows Subsystem for Linux) are also supported.
+
+\section{Installation}
+
+\subsection{System Requirements}
+
+E4D-HR is compatible with the following Linux distributions. Windows users with versions that support WSL2 (Windows Subsystem for Linux) are also supported.
+
+\begin{itemize}
+    \item \textbf{Ubuntu:} 20.04 (Focal Fossa), 22.04 (Jammy Jellyfish), 24.04 (Noble Numbat)
+    \item \textbf{WSL2:} Windows 10 (Version 1903 or later), Windows 11
+\end{itemize}
+
+\subsection{Required Software}
+
+\begin{itemize}
+    \item \textbf{Intel oneAPI Base Toolkit} 2024.2.0 or later
+    \item \textbf{Intel HPC Toolkit} 2024.2.0 or later
+    \item \textbf{build-essential} (Ubuntu and Debian)
+    \begin{itemize}
+        \item Install by running: \texttt{sudo apt-get update \&\& sudo apt-get install build-essential}
+    \end{itemize}
+\end{itemize}
 
 \subsection{Downloading E4D}
-To be completed.
 
-\subsection{Installing E4D} \label{install}
-To be completed.
+To download E4D-HR, follow these steps:
+
+\begin{enumerate}
+    \item Visit the \href{https://github.com/ofgn/E4D-HR}{E4D-HR GitHub repository}.
+    \item On the repository page, click on the \textbf{Code} button.
+    \item You can either:
+    \begin{itemize}
+        \item \textbf{Clone the repository} using Git by running the following command in your terminal:
+        \begin{verbatim}
+git clone https://github.com/ofgn/E4D-HR.git
+        \end{verbatim}
+        \item \textbf{Download the ZIP file} by clicking on \textbf{Download ZIP}, and then extract the contents to your desired directory.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Automatic Installation}
+
+For an automatic installation of E4D, use the provided \texttt{install.sh} script. This script handles the downloading, extracting, compiling, and setting up of all dependencies and E4D itself. To use the script, follow these steps:
+
+\begin{enumerate}
+    \item Ensure that the necessary environment variables for Intel MKL are set.
+    \item Open a terminal and navigate to the directory where \texttt{install.sh} is located.
+    \item Make the script executable:
+    \begin{verbatim}
+chmod +x install.sh
+    \end{verbatim}
+    \item Run the script:
+    \begin{verbatim}
+./install.sh
+    \end{verbatim}
+    \item The script will automatically handle the installation of dependencies and compilation of E4D. Follow any prompts provided by the script.
+\end{enumerate}
+
+Using the automatic installation script simplifies the setup process and ensures that all components are installed correctly with minimal manual intervention.
+
+\subsection{Manual Installation}
+
+To manually install E4D, follow these steps:
+
+\begin{enumerate}
+    \item \textbf{Prepare Your Environment}:
+        \begin{itemize}
+            \item Ensure that the Intel MKL environment variables are set. Source the Intel environment variables script (replace \texttt{<intel-compiler-dir>} with the path to your Intel installation):
+            \begin{verbatim}
+source <intel-compiler-dir>/setvars.sh
+            \end{verbatim}
+            \item Verify that the \texttt{MKLROOT} environment variable is set by running:
+            \begin{verbatim}
+echo $MKLROOT
+            \end{verbatim}
+            \item If \texttt{MKLROOT} is not set, refer to Intel’s documentation or support for configuration instructions.
+        \end{itemize}
+
+    \item \textbf{Install Dependencies}:
+        \begin{itemize}
+            \item \textbf{Install PETSc}:
+                \begin{itemize}
+                    \item Download and extract the PETSc source tarball (version 3.21.4):
+                    \begin{verbatim}
+tar -xzf petsc-3.21.4.tar.gz
+                    \end{verbatim}
+                    \item Navigate to the extracted directory:
+                    \begin{verbatim}
+cd petsc-3.21.4
+                    \end{verbatim}
+                    \item Configure PETSc with the appropriate options:
+                    \begin{verbatim}
+./configure --with-debugging=0 --with-fc=mpiifort -fc=ifx \\
+--with-cc=mpiicc -cc=icx --with-cxx=mpiicpc -cxx=icpx \\
+--with-blaslapack-dir=$MKLROOT
+                    \end{verbatim}
+                    \item Compile PETSc:
+                    \begin{verbatim}
+make all
+                    \end{verbatim}
+                \end{itemize}
+            \item \textbf{Install Triangle}:
+                \begin{itemize}
+                    \item Download and extract the Triangle source tarball (version 1.6):
+                    \begin{verbatim}
+tar -xzf triangle-1.6.tar.gz
+                    \end{verbatim}
+                    \item Navigate to the extracted directory:
+                    \begin{verbatim}
+cd triangle-1.6
+                    \end{verbatim}
+                    \item Compile Triangle:
+                    \begin{verbatim}
+make
+                    \end{verbatim}
+                \end{itemize}
+            \item \textbf{Install TetGen}:
+                \begin{itemize}
+                    \item Download and extract the TetGen source tarball (version 1.6.0):
+                    \begin{verbatim}
+tar -xzf tetgen-1.6.0.tar.gz
+                    \end{verbatim}
+                    \item Navigate to the extracted directory:
+                    \begin{verbatim}
+cd tetgen-1.6.0
+                    \end{verbatim}
+                    \item Compile TetGen:
+                    \begin{verbatim}
+make
+                    \end{verbatim}
+                \end{itemize}
+        \end{itemize}
+
+    \item \textbf{Compile E4D}:
+        \begin{itemize}
+            \item Navigate to the E4D source directory:
+            \begin{verbatim}
+cd path/to/E4D-HR/src
+            \end{verbatim}
+            \item Clean any previous builds:
+            \begin{verbatim}
+make clean
+            \end{verbatim}
+            \item Compile E4D with the configured PETSc:
+            \begin{verbatim}
+make FC=mpiifort -fc=ifx \\
+FFLAGS="-O2 -xHost -r8 -heap-arrays" \\
+PETSC_DIR=path/to/petsc-3.21.4
+            \end{verbatim}
+            \item Move the compiled E4D executable to the \texttt{bin} directory:
+            \begin{verbatim}
+mv e4d path/to/E4D-HR/bin
+            \end{verbatim}
+        \end{itemize}
+\end{enumerate}
+
+
+\newpage
 
 \section{Background}
 
@@ -78,19 +233,48 @@ Complex conductivity \( \sigma^* \) is used to describe the electrical propertie
 
 where \( \sigma' \) represents the conduction strength due to electromigration, and \( \sigma'' \) represents the polarisation strength associated with IP effects.
 
-The phase \( \phi_c \) associated with \( \sigma^* \) is defined as:
+The phase \( \phi \) associated with \( \sigma^* \) is defined as:
 
 \begin{equation}
-\sigma^* = |\sigma^*| e^{i\phi_c},
+\sigma^* = |\sigma^*| e^{i\phi},
 \end{equation}
 
-Here, \( \phi_c \) represents the phase lag of the induced alternating current (AC) electric field behind the injected AC current. The real part \( \sigma' \) is linked to the movement of charges through the material, while the imaginary part \( \sigma'' \) is associated with charge storage mechanisms, such as polarisation effects.
+Here, \( \phi \) represents the phase lag of the induced alternating current (AC) electric field behind the injected AC current. The real part \( \sigma' \) is linked to the movement of charges through the material, while the imaginary part \( \sigma'' \) is associated with charge storage mechanisms, such as polarisation effects.
+
+\subsubsection{Calculating Phase from Real and Imaginary Conductivity}
+
+The phase \( \phi \) can be computed from the real part \( \sigma' \) and the imaginary part \( \sigma'' \) of the complex conductivity using the following equation:
+
+\begin{equation}
+\phi = \arctan\left(\frac{\sigma''}{\sigma'}\right),
+\end{equation}
+
+where \( \arctan \) denotes the inverse tangent function. This equation gives the phase in radians, representing the lag of the AC field relative to the current.
+
+\subsubsection{Calculating Imaginary Conductivity from Real Conductivity and Phase}
+
+The imaginary part of the complex conductivity \( \sigma'' \) can be calculated from the real part \( \sigma' \) and the phase \( \phi \) using:
+
+\begin{equation}
+\sigma'' = \sigma' \cdot \tan(\phi),
+\end{equation}
+
+where \( \tan \) denotes the tangent function. This formula derives the imaginary conductivity based on the known real conductivity and the phase angle.
+
+\subsubsection{Magnitude of Complex Conductivity}
+
+The magnitude of the complex conductivity \( |\sigma^*| \) is calculated as:
+
+\begin{equation}
+|\sigma^*| = \sqrt{(\sigma')^2 + (\sigma'')^2}.
+\end{equation}
+
 
 \subsection{Decoupling Real and Imaginary Components}
 
 The use of complex numbers in E4D allows for the decoupling of the real and imaginary components of conductivity during forward and inverse modelling. This decoupling simplifies the computational process by allowing independent treatment of the real and imaginary components.
 
-In typical IP surveys, the phase angle \( \phi_c \) is relatively small (e.g., less than 0.2 radians), which means the influence of the imaginary component on the real component is often negligible. This allows the real and imaginary parts to be modelled separately, reducing memory requirements by a factor of two and improving computational efficiency.
+In typical IP surveys, the phase angle \( \phi \) is relatively small (e.g., less than 0.2 radians), which means the influence of the imaginary component on the real component is often negligible. This allows the real and imaginary parts to be modelled separately, reducing memory requirements by a factor of two and improving computational efficiency.
 
 Moreover, this decoupling enables the specification of noise levels separately for the real and imaginary components of the potential (or equivalently, for the magnitude and phase), removing ambiguities in data misfit residuals that exist in the complex number domain. This approach ensures that the inversion process appropriately fits the data, leading to more accurate subsurface characterisation.
 
@@ -236,7 +420,7 @@ The conditions under which E4D applies these constraints are determined by the w
 
 \subsection{Weighting Functions} \label{weighting_functions}
 
-The primary purpose of the weighting function is to determine the conditions under which the corresponding structural metric should or should not be used to constrain the inversion. In essence, the weighting functions activate or deactivate the structural metrics and determine the degree of emphasis on minimizing the structural metric during the transition between activation and deactivation.
+The primary purpose of the weighting function is to determine the conditions under which the corresponding structural metric should or should not be used to constrain the inversion. In essence, the weighting functions activate or deactivate the structural metrics and determine the degree of emphasis on minimising the structural metric during the transition between activation and deactivation.
 
 The independent variable for each weighting function is the value of the structural metric, denoted as \(X\). Each weighting function is based on the normal and cumulative normal distribution functions, and the output of these functions ranges between 0 and 1. If the weighting function evaluates to zero, the structural metric is inactive and does not influence the inversion. If it evaluates to one, the structural metric is fully active.
 
@@ -293,6 +477,90 @@ The variables used in these equations are as follows:
     \item \(\text{sd}\): The standard deviation of the weighting function, as specified in the constraint block in the inversion options file.
 \end{itemize}
 
+\section{Types of Constraints}
+
+\subsection{Smoothness Constraint}
+\begin{itemize}
+    \item \textbf{Structural Metric}: Metric 2
+    \begin{itemize}
+        \item Encourages smooth variations between adjacent elements.
+    \end{itemize}
+    \item \textbf{Weighting Function}: Function 1
+    \begin{itemize}
+        \item \textbf{Mean}: Typically set to a high value (e.g., 10).
+        \item \textbf{Standard Deviation}: Small (e.g., 0.01).
+        \item Ensures that the smoothness constraint is applied only when the difference between adjacent elements is not extreme.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Minimum Conductivity Constraint}
+\begin{itemize}
+    \item \textbf{Structural Metric}: Metric 3
+    \begin{itemize}
+        \item Enforces a lower bound on conductivity values.
+    \end{itemize}
+    \item \textbf{Weighting Function}: Function 1
+    \begin{itemize}
+        \item \textbf{Mean}: Typically set to 0.
+        \item \textbf{Standard Deviation}: Small (e.g., 0.1).
+        \item \textbf{Reference Value}: Defines the minimum allowable conductivity (e.g., 0.002 S/m). When the log conductivity drops below this value, the constraint activates to ensure that conductivity does not fall below the specified minimum.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Maximum Conductivity Constraint}
+\begin{itemize}
+    \item \textbf{Structural Metric}: Metric 3
+    \begin{itemize}
+        \item Enforces an upper bound on conductivity values.
+    \end{itemize}
+    \item \textbf{Weighting Function}: Function 2
+    \begin{itemize}
+        \item \textbf{Mean}: Typically set to 0.
+        \item \textbf{Standard Deviation}: Small (e.g., 0.1).
+        \item \textbf{Reference Value}: Defines the maximum allowable conductivity (e.g., 0.01 S/m). When the log conductivity exceeds this value, the constraint activates to ensure that conductivity does not surpass the specified maximum.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Blocky Constraint}
+\begin{itemize}
+    \item \textbf{Structural Metric}: Metric 2
+    \begin{itemize}
+        \item Enforces blocky variations between adjacent elements.
+    \end{itemize}
+    \item \textbf{Weighting Function}: Function 1
+    \begin{itemize}
+        \item \textbf{Mean}: Lower than in smoothness constraints (e.g., 0.1).
+        \item \textbf{Standard Deviation}: Small relative to the mean (e.g., 0.05).
+        \item Enforces similarity constraints only if the difference between adjacent elements is relatively small, making the model more blocky rather than smooth.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Anisotropic Weighting and Inequality Constraints}
+\begin{itemize}
+    \item \textbf{Structural Metric}: Metric 6
+    \begin{itemize}
+        \item Encourages continuity normal to a specific plane.
+    \end{itemize}
+    \item \textbf{Weighting Function}: Function 1
+    \begin{itemize}
+        \item \textbf{Mean}: Set to a high value (e.g., 5.0).
+        \item \textbf{Standard Deviation}: Small (e.g., 0.02).
+        \item Applies constraints in an anisotropic manner based on the orientation of the plane.
+    \end{itemize}
+    \item \textbf{Inequality Constraints}:
+    \begin{itemize}
+        \item \textbf{Lower Bound}: Metric 3 with Weighting Function 1
+        \begin{itemize}
+            \item \textbf{Reference Value}: Defines the minimum bound (e.g., 0.001 S/m).
+        \end{itemize}
+        \item \textbf{Upper Bound}: Metric 3 with Weighting Function 2
+        \begin{itemize}
+            \item \textbf{Reference Value}: Defines the maximum bound (e.g., 0.02 S/m).
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+
 
 
 
@@ -305,10 +573,12 @@ The variables used in these equations are as follows:
 This section includes information about the files that the user will need to manually define. It does not cover files generated automatically by E4D, Triangle, or TetGen.
 
 
-
+\newpage
 \subsection{Mesh Generation}
 
 \subsubsection{\texttt{inp} File Format} \label{mesh_inp}
+
+
 
 \begin{framed}
 \noindent \textbf{Important Note:} Must have the \texttt{e4d.inp} file name.
@@ -334,8 +604,9 @@ This section includes information about the files that the user will need to man
 \end{description}
 
 
-
+\newpage
 \subsubsection{\texttt{cfg} File Format} \label{mesh_cfg}
+
 
 \begin{framed}
 \noindent \textbf{Important Note:} Must have the \texttt{.cfg} file extension.
@@ -512,7 +783,7 @@ This section includes information about the files that the user will need to man
 
 
 
-
+\newpage
 \subsection{Forward Modelling}
 
 \subsubsection{\texttt{inp} File Format} \label{forward_inp}
@@ -567,7 +838,7 @@ This section includes information about the files that the user will need to man
 
 
 
-
+\newpage
 \subsubsection{\texttt{srv} File Format} \label{forward_srv}
 
 \begin{framed}
@@ -645,7 +916,7 @@ This section includes information about the files that the user will need to man
 \end{description}
 
 
-
+\newpage
 \subsubsection{\texttt{sig} File Format} \label{forward_sig}
 
 \begin{framed}
@@ -674,7 +945,7 @@ This section includes information about the files that the user will need to man
 \end{description}
 
 
-
+\newpage
 \subsubsection{\texttt{out} File Format} \label{forward_out}
 
 \begin{framed}
@@ -712,7 +983,7 @@ This section includes information about the files that the user will need to man
 \end{description}
 
 
-
+\newpage
 \subsection{Inversion}
 
 \subsubsection{\texttt{inp} File Format} \label{inversion_inp}
@@ -774,17 +1045,17 @@ This section includes information about the files that the user will need to man
     \item[\texttt{ip\_inv\_filename}] (char)\hfill \\
     The filename of the \texttt{ip\_inv} file. Must have the \texttt{.inv} file extension. Not required for \texttt{run\_mode = DCR3}.
 
-    \item[\texttt{initial\_model}] (char)\hfill \\
+    \item[\texttt{reference\_model}] (char)\hfill \\
     \begin{itemize}
-        \item \texttt{initial\_model = `none'}: Set to none unless the user requires inversion constraints based on a reference model.
-        \item \texttt{initial\_model = `sig\_file\_name'}: Alternatively, a \texttt{sig\_filename} can be specified.
+        \item \texttt{reference\_model = `none'}: Set to none unless the user requires inversion constraints based on a reference model.
+        \item \texttt{reference\_model = `sig\_file\_name'}: Alternatively, a \texttt{sig\_filename} can be specified.
     \end{itemize}
 \end{description}
 
 
 
 
-
+\newpage
 \subsubsection{\texttt{srv} File Format} \label{forward_srv}
 
 \begin{framed}
@@ -862,7 +1133,7 @@ This section includes information about the files that the user will need to man
 \end{description}
 
 
-
+\newpage
 \subsubsection{\texttt{out} File Format} \label{forward_out}
 
 \begin{framed}
@@ -900,7 +1171,7 @@ This section includes information about the files that the user will need to man
 \end{description}
 
 
-
+\newpage
 \subsubsection{\texttt{inv} File Format (DCR)} \label{inversion_dc}
 
 \begin{framed}
@@ -934,7 +1205,7 @@ This section includes information about the files that the user will need to man
     ref_value[nc]
     ref_weight[nc]
 
-    initial_beta reduction_criteria beta_reduction
+    initial_beta min_decrease beta_reduction
     chi2_target
     min_iter max_iter
     min_sig max_sig
@@ -982,11 +1253,11 @@ This section includes information about the files that the user will need to man
      \item[\texttt{initial\_beta}] (real)\hfill \\
      The global constraint weighting value at the beginning of the inversion, and controls the importance the inversion places on enforcing the model constraints in comparison to fitting the data. This parameter is either held constant or automatically reduced by E4D during the inversion when required to reduce the misfit between measured and simulated data.
 
-    \item[\texttt{reduction\_criteria}] (real)\hfill \\
-     The minimum fractional decrease in the objective function between outer iterations that may occur before beta is reduced. A conservative value for is \texttt{reduction\_criteria = 0.05}. Larger values will generally decrease time to convergence, but may also provide solutions that violate the model constraints more than what is necessary to appropriately fit the data.
+    \item[\texttt{min\_decrease}] (real)\hfill \\
+     The minimum fractional decrease in the objective function between outer iterations that may occur before beta is reduced. A conservative value for is \texttt{min\_decrease = 0.05}. Larger values will generally decrease time to convergence, but may also provide solutions that violate the model constraints more than what is necessary to appropriately fit the data.
 
      \item[\texttt{beta\_reduction}] (real)\hfill \\
-     The beta reduction factor. If the fractional decrease in the objective function between outer iterations is less than or equal to \texttt{reduction\_criteria}, then beta is reduced by a factor of \texttt{beta\_reduction} for the next iteration. A conservative value is \texttt{beta\_reduction = 0.5}.
+     The beta reduction factor. If the fractional decrease in the objective function between outer iterations is less than or equal to \texttt{min\_decrease}, then beta is reduced by a factor of \texttt{beta\_reduction} for the next iteration. A conservative value is \texttt{beta\_reduction = 0.5}.
 
      \item[\texttt{chi2\_target}] (real)\hfill \\
      The normalised $\chi^2$ value at which the inversion is considered to have converged. In the absence of modelling errors and accurately specified data standard deviations, $\chi^2$ should reach a value of 1.0 at convergence.
@@ -1021,7 +1292,7 @@ This section includes information about the files that the user will need to man
 \end{description}
 
 
-
+\newpage
 \subsubsection{\texttt{inv} File Format (IP)} \label{inversion_ip}
 
 \begin{framed}
@@ -1055,7 +1326,7 @@ This section includes information about the files that the user will need to man
     ref_value[nc]
     ref_weight[nc]
 
-    initial_beta reduction_criteria beta_reduction
+    initial_beta min_decrease beta_reduction
     chi2_target
     min_iter max_iter
     min_phase max_phase
@@ -1103,11 +1374,11 @@ This section includes information about the files that the user will need to man
      \item[\texttt{initial\_beta}] (real)\hfill \\
      The global constraint weighting value at the beginning of the inversion, and controls the importance the inversion places on enforcing the model constraints in comparison to fitting the data. This parameter is either held constant or automatically reduced by E4D during the inversion when required to reduce the misfit between measured and simulated data.
 
-    \item[\texttt{reduction\_criteria}] (real)\hfill \\
-     The minimum fractional decrease in the objective function between outer iterations that may occur before beta is reduced. A conservative value for is \texttt{reduction\_criteria = 0.05}. Larger values will generally decrease time to convergence, but may also provide solutions that violate the model constraints more than what is necessary to appropriately fit the data.
+    \item[\texttt{min\_decrease}] (real)\hfill \\
+     The minimum fractional decrease in the objective function between outer iterations that may occur before beta is reduced. A conservative value for is \texttt{min\_decrease = 0.05}. Larger values will generally decrease time to convergence, but may also provide solutions that violate the model constraints more than what is necessary to appropriately fit the data.
 
      \item[\texttt{beta\_reduction}] (real)\hfill \\
-     The beta reduction factor. If the fractional decrease in the objective function between outer iterations is less than or equal to \texttt{reduction\_criteria}, then beta is reduced by a factor of \texttt{beta\_reduction} for the next iteration. A conservative value is \texttt{beta\_reduction = 0.5}.
+     The beta reduction factor. If the fractional decrease in the objective function between outer iterations is less than or equal to \texttt{min\_decrease}, then beta is reduced by a factor of \texttt{beta\_reduction} for the next iteration. A conservative value is \texttt{beta\_reduction = 0.5}.
 
      \item[\texttt{chi2\_target}] (real)\hfill \\
      The normalised $\chi^2$ value at which the inversion is considered to have converged. In the absence of modelling errors and accurately specified data standard deviations, $\chi^2$ should reach a value of 1.0 at convergence.
@@ -1142,7 +1413,7 @@ This section includes information about the files that the user will need to man
 \end{description}
 
 
-
+\newpage
 \section{Miscellaneous File Formats}
 
 \subsubsection{\texttt{node/ele/edge/face/neigh} File Format} \label{mesh_files}
@@ -1162,7 +1433,7 @@ If \texttt{cfg\_filename = mesh\_prefix.cfg}, then the following files are gener
 A detailed description of each mesh file format is available in the TetGen manual \cite{10.1145/2629697}.
 
 
-
+\newpage
 \subsubsection{\texttt{trn} File Format} \label{mesh_trn}
 
 \begin{framed}
@@ -1220,7 +1491,7 @@ The synthetic model consists of a flat surface with two buried blocks, each meas
 
 \begin{figure}[H]
 \centering
-\fbox{\includegraphics[width=5.0in]{figures/two_blocks_dcr_ip.png}}
+\fbox{\includegraphics[width=7.0in]{figures/two_blocks_dcr_ip.png}}
 \caption{Synthetic model section view.}
 \label{fig:model}
 \end{figure}
@@ -1248,8 +1519,6 @@ Finally, add the directory containing the required executables to your system’
 \begin{verbatim}
 export PATH="$PATH:../E4D-HR/bin"
 \end{verbatim}
-
-
 
 \subsection{Forward IP1}
 
@@ -1354,7 +1623,7 @@ The file to pay particular attention to is \texttt{dummy.srv}. This file contain
 
 The \texttt{e4d.out} file contains standard settings and does not include any additional options to export the potential distribution.
 
-\subsubsection{Calculating a forward model with the IP2 mode}
+\subsubsection{Calculating a Forward Model with the IP2 mode}
 
 To initiate the forward modelling process, ensure that your working directory contains the following files:
 
@@ -1405,7 +1674,7 @@ In the \texttt{/inversion\_IP1/inversion\_mesh.cfg} directory, you will find two
     \item \texttt{inversion\_mesh.cfg}
 \end{itemize}
 
-You will notice that the \texttt{inversion\_mesh.cfg} file is largely similar to \texttt{/forward\_IP1/two\_blocks.cfg}, particularly in that it includes control points at the electrode locations, along with the additional refinement points. However, the key difference is that we do not define control points for the two blocks, nor do we define their facets. Consequently, this inversion mesh consists of just two zones: 1600 m × 1200 m × 2000 m rectangular zone and the rest of the mesh.
+You will notice that the \texttt{inversion\_mesh.cfg} file is largely similar to \newline \texttt{/forward\_IP1/two\_blocks.cfg}, particularly in that it includes control points at the electrode locations, along with the additional refinement points. However, the key difference is that we do not define control points for the two blocks, nor do we define their facets. Consequently, this inversion mesh consists of just two zones: 1600 m × 1200 m × 2000 m rectangular zone and the rest of the mesh.
 
 \subsubsection{Generating the Mesh with the IP1 mode}
 
@@ -1497,7 +1766,7 @@ For detailed information about each iteration, refer to the \texttt{e4d.log} fil
 
 \begin{figure}[H]
 \centering
-\fbox{\includegraphics[width=5.0in]{figures/inversion_dcr_ip.png}}
+\fbox{\includegraphics[width=7.0in]{figures/inversion_dcr_ip.png}}
 \caption{Inversion model section view.}
 \label{fig:inversion}
 \end{figure}
